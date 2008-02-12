@@ -1,0 +1,301 @@
+# $Id$
+
+import sets
+import time
+import urllib
+from HTMLParser import HTMLParser
+
+from PyHtmlTable import PyHtmlTable
+from probstat import Cartesian
+
+
+url = 'http://crs.upd.edu.ph/schedule/index.jsp'
+
+
+#####
+### if the start and end times are the same, represent only as one class to avoid duplicates
+###
+### http://tomayko.com/articles/2004/12/15/the-static-method-thing
+
+def strftime(format, t):
+    return time.strftime(format, (1900, 1, 1, t[0], t[1], 0, 0, 1, -1))
+
+
+class ScheduleConflict(Exception):
+    pass
+
+
+class Duration(tuple):
+
+    def __repr__(self):
+        return "<%s-%s>" % (strftime("%I:%M%P", self[0]), strftime("%I:%M%P", self[1]))
+
+
+class Class(object):
+
+    def __init__(self):
+        self.code = None
+        self.name = None
+        self.section = None
+        self.credits = None
+        self.schedule = None
+        self.stats = None
+
+    def __repr__(self):
+        return "<%s %s>" % (self.name, self.section)
+
+
+class Schedule(list):
+
+    def __init__(self):
+        self.times = []
+
+    def _check_conflicts(self, class_):
+        for c in self:
+            for day in c.schedule:
+                try:
+                    class_.schedule[day]
+                except KeyError:
+                    continue
+                for dur in c.schedule[day]:
+                    for dur_new in class_.schedule[day]:
+                        if (dur_new[0] <= dur[0] and dur_new[1] >= dur[1]) or \
+                        (dur_new[0] >= dur[0] and dur_new[1] <= dur[1]) or \
+                        dur[0] < dur_new[0] < dur[1] or dur[0] < dur_new[1] < dur[1]:
+                            raise ScheduleConflict("%s conflicts with %s" % (class_, c))
+
+    def append(self, class_):
+        if not isinstance(class_, Class):
+            raise TypeError("argument should be an instance of Class")
+        self._check_conflicts(class_)
+        super(Schedule, self).append(class_)
+        for day in class_.schedule:
+            for duration in class_.schedule[day]:
+                self.times += (duration[0], duration[1])
+
+    def remove(self, class_):
+        try:
+            super(Schedule, self).remove(class_)
+        except ValueError:
+            raise ValueError("no such class: %s" % (class_, ))
+
+    def table(self):
+        self.times = list(sets.Set(self.times))
+        self.times.sort()
+        table = PyHtmlTable(len(self.times), 7, {'border': 1})
+        day_map = {'M': 1, 'T': 2, 'W': 3, 'Th': 4, 'F': 5, 'S': 6}
+        ctr = 0
+        for header in ('Time', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'):
+            table.setCellcontents(0, ctr, header)
+            ctr += 1
+        for idx in range(len(self.times) - 1):
+            table.setCellcontents(idx+1, 0, "-".join([strftime("%I:%M%P", self.times[idx]), strftime("%I:%M%P", self.times[idx+1])]))
+        for class_ in self:
+            for day in class_.schedule:
+                day_i = day_map[day]
+                for duration in class_.schedule[day]:
+                    start, end = duration
+                    s = self.times.index(start)
+                    e = self.times.index(end)
+                    for i in range(s, e):
+                        table.setCellcontents(i+1, day_i, " ".join([class_.name, class_.section]))
+        return table.return_html()
+
+
+class CRSParser(HTMLParser):
+
+    def __init__(self, target):
+        HTMLParser.__init__(self)
+        self.target = target.lower()
+
+    @staticmethod
+    def _parse_time(start, end):
+        start = start.upper()
+        end = end.upper()
+
+        if 'M' not in end:
+            # Append 'M'.
+            end = "".join([end, 'M'])
+
+        for format in ('%I%p', '%I:%M%p'):
+            try:
+                time_end = time.strptime(end, format)[3:5]
+            except ValueError:
+                continue
+            else:
+                break
+        # Get the int value of the hours.
+        start_hour = int(start.split(':')[0].rstrip('M').rstrip('A').rstrip('P'))
+        end_hour = int(strftime('%I', time_end))
+
+        if ('A' in start or 'P' in start) and 'M' not in start:
+            # Append 'M'.
+            start = "".join([start, 'M'])
+        elif start_hour <= end_hour and end_hour != 12:
+            # Append the same am/pm to the start time.
+            start = "".join([start, strftime("%P", time_end)])
+
+        for format in ('%I', '%I:%M', '%I%p', '%I:%M%p'):
+            try:
+                time_start = time.strptime(start, format)[3:5]
+            except ValueError:
+                continue
+            else:
+                break
+        return Duration((time_start, time_end))
+
+    @staticmethod
+    def _parse_day(combi):
+        # Replace 'Th' by 'th' to avoid confusion with 'T'.
+        combi = combi.replace('Th', 'th')
+        days = []
+        for day in ('M', 'T', 'W', 'th', 'F', 'S'):
+            if day in combi:
+                days.append(day.title())
+        return days
+
+    @staticmethod
+    def _parse_sched(string):
+        split = string.split()
+        sched = {}
+        for idx in range(len(split)):
+            if split[idx] in ('M', 'T', 'W', 'Th', 'F', 'MTh', 'TF', 'S', 'MTThF', 'MTWThF'):
+                start, end = split[idx + 1].split('-')
+                time = CRSParser._parse_time(start, end)
+                for day in CRSParser._parse_day(split[idx]):
+                    try:
+                        sched[day]
+                    except KeyError:
+                        sched[day] = [time]
+                    else:
+                        sched[day].append(time)
+        return sched
+
+    @staticmethod
+    def _merge_sched(dest, source):
+        for day in source:
+            try:
+                dest[day]
+            except KeyError:
+                dest[day] = source[day]
+            else:
+                dest[day] = dest[day] + source[day]
+
+    def reset(self):
+        HTMLParser.reset(self)
+        self.class_ = Class()
+        self.results = []
+        self.parents = []
+        self.table = False
+        self.row = False
+        self.column = 0
+
+    def handle_starttag(self, tag, attrs):
+        if self.row and tag == 'td' and attrs == [('class', 'textc')]:
+            self.column += 1
+        elif self.table and tag == 'tr' and attrs in ([('class', 'bodytdodd')], [('class', 'bodytdeven')]):
+            self.row = True
+        elif tag == 'table' and attrs == [('class', 'bodytable'), ('width', '80%')]:
+            self.table = True
+
+    def handle_endtag(self, tag):
+        if self.row and tag == 'tr':
+            if self.class_.stats is not None and self.class_.name.lower() == self.target:
+                if self.class_.credits != 0.0:
+                    for parent in self.parents:
+                        if self.class_.section.startswith(parent.section):
+                            self._merge_sched(self.class_.schedule, parent.schedule)
+                    self.results.append(self.class_)
+                else:
+                    self.parents.append(self.class_)
+            self.class_ = Class()
+            self.row = False
+            self.column = 0
+        elif tag == 'table':
+            self.table = False
+
+    def handle_data(self, data):
+        if self.row:
+            data = data.strip()
+            if not data:
+                return
+            if self.column == 1 and self.class_.code is None:
+                try:
+                    self.class_.code = int(data)
+                except ValueError:
+                    return
+            elif self.column == 2 and self.class_.name is None and self.class_.section is None:
+                try:
+                    self.class_.name, self.class_.section = data.rsplit(' ', 1)
+                except ValueError:
+                    return
+            elif self.column == 3 and self.class_.credits is None:
+                try:
+                    self.class_.credits = float(data)
+                except ValueError:
+                    return
+            elif self.column == 4 and self.class_.schedule is None:
+                self.class_.schedule = self._parse_sched(data)
+            elif self.column == 5 and self.class_.stats is None:
+                try:
+                    self.class_.stats = tuple([int(i) for i in data.split() if i != '/'])
+                except ValueError:
+                    return
+
+
+class SemParser(HTMLParser):
+
+    def reset(self):
+        HTMLParser.reset(self)
+        self.results = {}
+        self.anchor = False
+        self.ay_sem = None
+
+    def handle_starttag(self, tag, attrs):
+        attrs = dict(attrs)
+        if tag == 'a' and attrs['class'] == 'header':
+            ay, sem = attrs['href'].split('=')[2:]
+            ay = ay.split('&')[0]
+            self.ay_sem = " ".join([ay, sem])
+            self.anchor = True
+
+    def handle_endtag(self, tag):
+        self.anchor = False
+
+    def handle_data(self, data):
+        if self.anchor:
+            self.results[self.ay_sem]= data
+
+
+def search(subject, ay, sem):
+    query = urllib.urlencode({'searchkey': subject, 'ay': ay, 'sem': sem})
+    socket = urllib.urlopen(url, query)
+    data = socket.read()
+    socket.close()
+    parser = CRSParser(subject)
+    parser.feed(data)
+    parser.close()
+    return parser.results
+
+
+def get_semesters():
+    socket = urllib.urlopen(url)
+    data = socket.read()
+    socket.close()
+    parser = SemParser()
+    parser.feed(data)
+    parser.close()
+    return parser.results
+
+
+def get_schedules(*classes):
+    schedules = []
+    for combination in Cartesian(list(classes)):
+        sched = Schedule()
+        try:
+            map(sched.append, combination)
+        except ScheduleConflict:
+            continue
+        schedules.append(sched)
+
+    return schedules

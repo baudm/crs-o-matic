@@ -1,0 +1,103 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+  <head>
+    <title>CRS-o-matic (Python-powered)</title>
+  </head>
+  <body>
+    <p>
+      <b>CRS-o-matic</b> - a CRS schedule generator and probability and statistics tool written in pure Python<br/>
+      E-mail me for questions/comments/suggestions: djclue917 at gmail ! com<br/>
+      <br/>
+      <b>Clarification of Terms:</b><br/>
+      * probability - your probability of getting a particular subject; probability = 100% means a 'sure shot'.<br/>
+      * probability mean - the mean of the probabilities of all the subjects in a particular schedule.<br/>
+      * standard deviation - the standard deviation of the probability distribution in a particular schedule.<br/>
+      <br/>
+      <b>NOTES:</b><br/>
+      * You would want a schedule with a high probability mean and a low standard deviation.<br/>
+      * The code is currently not _that_ optimized and may eat a lot of resources. A <a href="http://probstat.sourceforge.net/">Python extension module (written in C)</a> is used to speed up the <a href="http://en.wikipedia.org/wiki/Cartesian_product">Cartesian product</a> calculations.<br/>
+      * Duplicate schedules might be displayed. I'm still working on it.<br/>
+      * I am aware that the current interface is ugly. You can help by creating a template. Yes, (x)HTML, CSS, and all that stuff.<br/>
+      <br/>
+      <b>TODO:</b><br/>
+      * Optimization
+    </p>
+<%
+import cgi
+import math
+
+import crs
+
+
+def sum(li):
+    s = 0
+    for e in li:
+        s += e
+    return s
+
+
+if form.has_key('searchkey') and form['searchkey']:
+    search = [s for s in form['searchkey'].split('\r\n') if s]
+    ay, sem = form['term'].split()
+    classes = []
+    for s in search:
+        classes.append(crs.search(s, ay, sem))
+
+    scheds = crs.get_schedules(*classes)
+    p = 1
+    for a in [len(a) for a in classes]: p *= a
+%>
+<%= "\nThere %s %d schedule%s without conflicts out of %d possible schedule%s:<br/>\n<br/>\n" % ('is' if len(scheds) == 1 else 'are', len(scheds), '' if len(scheds) == 1 else 's', p, '' if p == 1 else 's') %>
+<%
+    for s in scheds:
+        prob_list = []
+        for c in s:
+            try:
+                prob_class = float(c.stats[0] - c.stats[3])/c.stats[1]
+            except ZeroDivisionError:
+                prob_class = 1.0
+
+            if prob_class > 1.0:
+                prob_class = 1.0
+            elif prob_class < 0.0:
+                prob_class = 0.0
+
+            prob_list.append(prob_class)
+        prob = sum(prob_list)/len(classes)
+        stdev = math.sqrt(sum(map(lambda x: (x-prob)*(x-prob), prob_list))/len(classes))
+%>
+<%= s.table() %>
+<%= "\nprobability mean = %.2f%%&nbsp;&nbsp;&nbsp;standard deviation = %.2f<br/>\n<br/>\n" % (100*prob, 100*stdev) %>
+<%
+else:
+    # begin HTML
+%>
+  <form name="form" method="post" action="">
+    <label>Semester:</label><br/>
+    <select name="term">
+<%
+    sems = crs.get_semesters()
+    keys = sems.keys()
+    keys.reverse()
+    for sem in keys:
+        # begin for loop
+%>
+<%= '      <option value="%s">%s</option>' % (sem, sems[sem]) %>
+<%
+    # end for loop
+%>
+    </select><br/>
+    <label>Desired subjects (newline-separated):</label><br/>
+    <textarea rows="10" cols="20" name="searchkey"></textarea><br/>
+    <input type="submit" value="Submit" />
+  </form>
+<%
+# end HTML
+%>
+    <p>
+      <a href="http://validator.w3.org/check?uri=referer">
+        <img src="http://www.w3.org/Icons/valid-xhtml10-blue" alt="Valid XHTML 1.0 Transitional" height="31" width="88" />
+      </a>
+    </p>
+  </body>
+</html>
