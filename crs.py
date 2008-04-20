@@ -175,7 +175,7 @@ class CRSParser(HTMLParser):
         split = string.split()
         sched = {}
         for idx in range(len(split)):
-            if split[idx] in ('M', 'T', 'W', 'Th', 'F', 'MTh', 'TF', 'S', 'MTThF', 'MTWThF'):
+            if split[idx] in ('M', 'T', 'W', 'Th', 'F', 'MTh', 'TF', 'S', 'MTThF', 'MTWThF', 'TTh', 'WF'):
                 start, end = split[idx + 1].split('-')
                 time = CRSParser._parse_time(start, end)
                 for day in CRSParser._parse_day(split[idx]):
