@@ -8,10 +8,12 @@
       <b>CRS-o-matic</b> - a CRS schedule generator and probability and statistics tool written in pure Python<br/>
       E-mail me for questions/comments/suggestions: djclue917 at gmail ! com<br/>
       <br/>
+      This project is hosted in <a href="http://code.google.com/p/crs-o-matic/">Google Code</a>.<br/>
+      <br/>
       <b>Clarification of Terms:</b><br/>
-      * probability - your probability of getting a particular subject; probability = 100% means a 'sure shot'.<br/>
-      * probability mean - the mean of the probabilities of all the subjects in a particular schedule.<br/>
-      * standard deviation - the standard deviation of the probability distribution in a particular schedule.<br/>
+      * probability - the chances of getting a particular subject; probability = 100% means a 'sure shot'.<br/>
+      * mean - the mean of the probabilities of the subjects in a particular schedule.<br/>
+      * standard deviation - the standard deviation of the probabilities of the subjects in a particular schedule.<br/>
       <br/>
       <b>NOTES:</b><br/>
       * You would want a schedule with a high probability mean and a low standard deviation.<br/>
@@ -67,7 +69,7 @@ if form.has_key('searchkey') and form['searchkey']:
         stdev = math.sqrt(sum(map(lambda x: (x-prob)*(x-prob), prob_list))/len(classes))
 %>
 <%= s.table() %>
-<%= "\nprobability mean = %.2f%%, standard deviation = %.2f%%, min = %.2f%%, max = %.2f%%<br/>\n<br/>\n" % (100*prob, 100*stdev, 100*min(prob_list), 100*max(prob_list)) %>
+<%= "\nminimum = %.2f%%, maximum = %.2f%%, mean = %.2f%%, standard deviation = %.2f%%<br/>\n<br/>\n" % (100*min(prob_list), 100*max(prob_list), 100*prob, 100*stdev) %>
 <%
 else:
     # begin HTML
@@ -75,6 +77,8 @@ else:
   <form name="form" method="post" action="">
     <label>Semester:</label><br/>
     <select name="term">
+      <option value="2008 1">1st Semester 2008-2009</option>
+      <option value="2007 3">Summer 2008-2009</option>
 <%
     sems = crs.get_semesters()
     keys = sems.keys()
