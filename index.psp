@@ -67,7 +67,7 @@ if form.has_key('searchkey') and form['searchkey']:
         stdev = math.sqrt(sum(map(lambda x: (x-prob)*(x-prob), prob_list))/len(classes))
 %>
 <%= s.table() %>
-<%= "\nprobability mean = %.2f%%&nbsp;&nbsp;&nbsp;standard deviation = %.2f<br/>\n<br/>\n" % (100*prob, 100*stdev) %>
+<%= "\nprobability mean = %.2f%%, standard deviation = %.2f%%, min = %.2f%%, max = %.2f%%<br/>\n<br/>\n" % (100*prob, 100*stdev, 100*min(prob_list), 100*max(prob_list)) %>
 <%
 else:
     # begin HTML
