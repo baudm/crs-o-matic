@@ -1,29 +1,32 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <title>CRS-o-matic (Python-powered)</title>
+    <link rel="stylesheet" type="text/css" href="main.css" />
   </head>
   <body>
-    <p>
-      <b>CRS-o-matic</b> - a CRS schedule generator and probability and statistics tool written in pure Python<br/>
-      E-mail me for questions/comments/suggestions: djclue917 at gmail ! com<br/>
-      <br/>
-      This project is hosted in <a href="http://code.google.com/p/crs-o-matic/">Google Code</a>.<br/>
-      <br/>
-      <b>Clarification of Terms:</b><br/>
-      * probability - the chances of getting a particular subject; probability = 100% means a 'sure shot'.<br/>
-      * mean - the mean of the probabilities of the subjects in a particular schedule.<br/>
-      * standard deviation - the standard deviation of the probabilities of the subjects in a particular schedule.<br/>
-      <br/>
-      <b>NOTES:</b><br/>
-      * You would want a schedule with a high probability mean and a low standard deviation.<br/>
-      * The code is currently not _that_ optimized and may eat a lot of resources. A <a href="http://probstat.sourceforge.net/">Python extension module (written in C)</a> is used to speed up the <a href="http://en.wikipedia.org/wiki/Cartesian_product">Cartesian product</a> calculations.<br/>
-      * Duplicate schedules might be displayed. I'm still working on it.<br/>
-      * I am aware that the current interface is ugly. You can help by creating a template. Yes, (x)HTML, CSS, and all that stuff.<br/>
-      <br/>
-      <b>TODO:</b><br/>
-      * Optimization
-    </p>
+    <div id="wrap">
+      <div id="content">
+        <p>
+          <b>CRS-o-matic</b> - a CRS schedule generator and probability and statistics tool written in pure Python<br/>
+          E-mail me for questions/comments/suggestions: djclue917 at gmail ! com<br/>
+          <br/>
+          This project is hosted at <a href="http://code.google.com/p/crs-o-matic/">Google Code</a>.<br/>
+          <br/>
+          <b>Clarification of Terms:</b><br/>
+          * probability - the chances of getting a particular subject; probability = 100% means a 'sure shot'.<br/>
+          * mean - the mean of the probabilities of the subjects in a particular schedule.<br/>
+          * standard deviation - the standard deviation of the probabilities of the subjects in a particular schedule.<br/>
+          <br/>
+          <b>NOTES:</b><br/>
+          * You would want a schedule with a high probability mean and a low standard deviation.<br/>
+          * The code is currently not _that_ optimized and may eat a lot of resources. A <a href="http://probstat.sourceforge.net/">Python extension module (written in C)</a> is used to speed up the <a href="http://en.wikipedia.org/wiki/Cartesian_product">Cartesian product</a> calculations.<br/>
+          * Duplicate schedules might be displayed. I'm still working on it.<br/>
+          * I am aware that the current interface is ugly. You can help by creating a template. Yes, (x)HTML, CSS, and all that stuff.<br/>
+          <br/>
+          <b>TODO:</b><br/>
+          * Optimization
+        </p>
 <%
 import cgi
 import math
@@ -98,10 +101,12 @@ else:
 <%
 # end HTML
 %>
-    <p>
-      <a href="http://validator.w3.org/check?uri=referer">
-        <img src="http://www.w3.org/Icons/valid-xhtml10-blue" alt="Valid XHTML 1.0 Transitional" height="31" width="88" />
-      </a>
-    </p>
+        <p class="icon">
+          <a href="http://validator.w3.org/check?uri=referer">
+            <img src="http://www.w3.org/Icons/valid-xhtml10-blue" alt="Valid XHTML 1.0 Strict" height="31" width="88" />
+          </a>
+        </p>
+      </div>
+    </div>
   </body>
 </html>

@@ -98,11 +98,12 @@ class Schedule(list):
     def table(self):
         self.times = list(sets.Set(self.times))
         self.times.sort()
-        table = PyHtmlTable(len(self.times), 7, {'border': 1})
+        table = PyHtmlTable(len(self.times), 7, {'cellpadding': 0, 'cellspacing': 0})
         day_map = {'M': 1, 'T': 2, 'W': 3, 'Th': 4, 'F': 5, 'S': 6}
         ctr = 0
         for header in ('Time', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'):
             table.setCellcontents(0, ctr, header)
+            table.setCelltype(0, ctr, 'th')
             ctr += 1
         for idx in range(len(self.times) - 1):
             table.setCellcontents(idx+1, 0, "-".join([strftime("%I:%M%P", self.times[idx]), strftime("%I:%M%P", self.times[idx+1])]))
