@@ -59,7 +59,6 @@ class twodarr(object):
         return (self.storage)
 
     def add_col(self):
-        nrow = []
         for f in range( self.maxX ):
             self.storage[ f ].append(self.filltype)
         self.maxY = self.maxY +1

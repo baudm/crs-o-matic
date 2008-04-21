@@ -28,7 +28,6 @@
           * Optimization
         </p>
 <%
-import cgi
 import math
 
 import crs

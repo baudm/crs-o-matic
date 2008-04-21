@@ -97,7 +97,6 @@ Example
 """
 
 import re
-import copy
 import twodarr
 import sys
 
