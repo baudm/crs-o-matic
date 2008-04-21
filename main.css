@@ -12,6 +12,11 @@ img {
   }
 
 
+fieldset {
+    border: none;
+  }
+
+
 #wrap {
     background: #ffffff url('images/bg.png') repeat-y center center;
     margin: 0px auto;
