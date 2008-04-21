@@ -115,6 +115,7 @@ class Schedule(list):
                     s = self.times.index(start)
                     e = self.times.index(end)
                     table.setCellRowSpan(s + 1, day_i, e - s)
+                    table.setCellattrs(s + 1, day_i, {'class': 'subject'})
                     table.setCellcontents(s + 1, day_i, " ".join([class_.name, class_.section]))
         return table.return_html()
 
