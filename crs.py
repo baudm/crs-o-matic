@@ -114,8 +114,8 @@ class Schedule(list):
                     start, end = duration
                     s = self.times.index(start)
                     e = self.times.index(end)
-                    for i in range(s, e):
-                        table.setCellcontents(i+1, day_i, " ".join([class_.name, class_.section]))
+                    table.setCellRowSpan(s + 1, day_i, e - s)
+                    table.setCellcontents(s + 1, day_i, " ".join([class_.name, class_.section]))
         return table.return_html()
 
 
