@@ -77,12 +77,12 @@ if form.has_key('searchkey') and form['searchkey']:
 else:
     # begin HTML
 %>
-  <form id="form" method="post" action="">
-    <fieldset>
-      <label for="term">Semester:</label><br/>
-      <select id="term" name="term">
-        <option value="2008 1">1st Semester 2008-2009</option>
-        <option value="2007 3">Summer 2008-2009</option>
+        <form id="form" method="post" action="">
+          <fieldset>
+            <label for="term">Semester:</label><br/>
+            <select id="term" name="term">
+              <option value="2008 1">1st Semester 2008-2009</option>
+              <option value="2007 3">Summer 2008-2009</option>
 <%
     sems = crs.get_semesters()
     keys = sems.keys()
@@ -90,16 +90,16 @@ else:
     for sem in keys:
         # begin for loop
 %>
-<%= '        <option value="%s">%s</option>' % (sem, sems[sem]) %>
+<%= '              <option value="%s">%s</option>' % (sem, sems[sem]) %>
 <%
     # end for loop
 %>
-      </select><br/>
-      <label for="searchkey">Desired subjects (newline-separated):</label><br/>
-      <textarea id="searchkey" name="searchkey" rows="10" cols="20"></textarea><br/>
-      <input type="submit" value="Submit" />
-    </fieldset>
-  </form>
+            </select><br/>
+            <label for="searchkey">Desired subjects (newline-separated):</label><br/>
+            <textarea id="searchkey" name="searchkey" rows="10" cols="20"></textarea><br/>
+            <input type="submit" value="Submit" />
+          </fieldset>
+        </form>
 <%
 # end HTML
 %>
