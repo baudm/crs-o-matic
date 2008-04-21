@@ -114,7 +114,8 @@ class Schedule(list):
                     start, end = duration
                     s = self.times.index(start)
                     e = self.times.index(end)
-                    table.setCellRowSpan(s + 1, day_i, e - s)
+                    if (e - s) != 1:
+                        table.setCellRowSpan(s + 1, day_i, e - s)
                     table.setCellattrs(s + 1, day_i, {'class': 'subject'})
                     table.setCellcontents(s + 1, day_i, " ".join([class_.name, class_.section]))
         return table.return_html()
@@ -197,7 +198,7 @@ class CRSParser(HTMLParser):
             except KeyError:
                 dest[day] = source[day]
             else:
-                dest[day] = dest[day] + source[day]
+                dest[day] += source[day]
 
     def reset(self):
         HTMLParser.reset(self)
