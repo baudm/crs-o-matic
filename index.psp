@@ -28,7 +28,7 @@
           * Optimization
         </p>
 <%
-import math
+from math import sqrt
 
 import crs
 
@@ -68,7 +68,7 @@ if form.has_key('searchkey') and form['searchkey']:
 
             prob_list.append(prob_class)
         prob = sum(prob_list)/len(classes)
-        stdev = math.sqrt(sum(map(lambda x: (x-prob)*(x-prob), prob_list))/len(classes))
+        stdev = sqrt(sum(map(lambda x: (x-prob)*(x-prob), prob_list))/len(classes))
 %>
 <%= s.table() %>
 <%= "\nminimum = %.2f%%, maximum = %.2f%%, mean = %.2f%%, standard deviation = %.2f%%<br/>\n<br/>\n" % (100*min(prob_list), 100*max(prob_list), 100*prob, 100*stdev) %>
