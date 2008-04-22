@@ -2,12 +2,12 @@
 
 """
 -------------------------------------------
-             Class twodarr
+             Class NxNArray
 
 What:
 
-    twodarr class written specifically for use with the
-    PyHtmlTable class
+    NxNArray class written specifically for use with the
+    HTMLTable class
 
 Why:
 
@@ -27,7 +27,7 @@ Why:
 import copy
 
 
-class twodarr(object):
+class NxNArray(object):
 
     maxX    = 0
     maxY    = 0
@@ -98,7 +98,7 @@ class twodarr(object):
 
 
 def main():
-    b=twodarr(1,4)
+    b=NxNArray(1,4)
     print b.get_arr()
     print "MAX", b.get_max_row(), b.get_max_col()
     b.add_col()

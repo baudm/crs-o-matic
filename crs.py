@@ -21,7 +21,7 @@ import time
 import urllib
 from HTMLParser import HTMLParser
 
-from PyHtmlTable import PyHtmlTable
+from htmltable import HTMLTable
 from probstat import Cartesian
 
 
@@ -98,7 +98,7 @@ class Schedule(list):
     def table(self):
         self.times = list(sets.Set(self.times))
         self.times.sort()
-        table = PyHtmlTable(len(self.times), 7, {'cellpadding': 0, 'cellspacing': 0})
+        table = HTMLTable(len(self.times), 7, {'cellpadding': 0, 'cellspacing': 0})
         day_map = {'M': 1, 'T': 2, 'W': 3, 'Th': 4, 'F': 5, 'S': 6}
         ctr = 0
         for header in ('Time', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'):

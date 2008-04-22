@@ -2,7 +2,7 @@
 
 """
 -----------------------------------------
-                Class PyHtmlTable
+                Class HTMLTable
 
 What:
 
@@ -37,7 +37,7 @@ Example
 
     print "<b> 2 by 2 table </b> "
 
-    t  = PyHtmlTable(2,2, {'width':'400','border':2,'bgcolor':'white'})
+    t  = HTMLTable(2,2, {'width':'400','border':2,'bgcolor':'white'})
 
     t.setCellcontents(0,0,"T1 Cell 00")
     t.setCellcontents(0,1,"T1 Cell 01")
@@ -71,7 +71,7 @@ Example
     print "<hr><b> Embed in new table </b>"
 
     htmlstr = t.return_html()
-    nt = PyHtmlTable(1,4, {'width':'800','border':2,'bgcolor':'green'})
+    nt = HTMLTable(1,4, {'width':'800','border':2,'bgcolor':'green'})
 
     nt.setCellcontents(0,0,"Cell th....text left")
     nt.setCellcontents(0,1,"Text right")
@@ -91,20 +91,20 @@ Example
 
     Home-Page:               http://pasko.net/PyHtmlTable
     Primary-Site:            http://pasko.net/PyHtmlTable
-    Software-requirements:   twodarr.py
+    Software-requirements:   nxnarray.py
 
     Written and debugged under Python 2.2.2 by Joe Pasko
 """
 
 import re
-import twodarr
+import nxnarray
 import sys
 
 
-class PyHtmlTable(object):
+class HTMLTable(object):
 
     def __init__(self, rows, cols, tattr=None):
-        self.htcells = twodarr.twodarr(rows, cols, '&nbsp;')
+        self.htcells = nxnarray.NxNArray(rows, cols, '&nbsp;')
         self.tabattr = ""          # Holds border=FOO, color=bar pairs
         self.cellattr = {}          # <td . $attr  (row,col) tuple
         self.endcellattr = {}          # $attr . </td>
@@ -378,7 +378,7 @@ class PyHtmlTable(object):
             data = '&nbsp;'
 
         self.htcells.set_cell( row, col, data )
-        # May have need to grow the table in the twodarray class
+        # May have need to grow the table in the NxNArray class
         # Query class to reset max row/cols if necessary
 
         self.maxRow = self.htcells.get_num_rows()
@@ -692,7 +692,7 @@ def main():
 
     print "<b> 2 by 2 table</b> "
 
-    t  = PyHtmlTable(2,2, { 'width':'400', 'border':2, 'bgcolor':'white'} )
+    t  = HTMLTable(2,2, { 'width':'400', 'border':2, 'bgcolor':'white'} )
 
     t.setCellcontents(0,0,"T1 Cell 00")
     t.setCellcontents(0,1,"T1 Cell 01")
@@ -729,7 +729,7 @@ def main():
     print "<hr><b> Embed in new table </b>"
 
     htmlstr = t.return_html()
-    nt = PyHtmlTable(1,4, {'width':'800','border':2,'bgcolor':'green'})
+    nt = HTMLTable(1,4, {'width':'800','border':2,'bgcolor':'green'})
 
     nt.setCellcontents(0,0,"Cell th....text left")
     nt.setCellcontents(0,1,"Text right")
