@@ -87,7 +87,7 @@ class Schedule(list):
         super(Schedule, self).append(class_)
         for day in class_.schedule:
             for duration in class_.schedule[day]:
-                self.times += (duration[0], duration[1])
+                self.times += duration
 
     def remove(self, class_):
         try:
