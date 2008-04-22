@@ -1,113 +1,105 @@
-#!/usr/bin/env python
+# $Id$
+#
+# nxnarray - part of the CRS-o-matic project
+# Copyright (C) 2008  Darwin M. Bautista
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 """
--------------------------------------------
-             Class NxNArray
-
-What:
-
-    NxNArray class written specifically for use with the
-    HTMLTable class
-
-Why:
-
-    I needed something that could store data in an NxN array
-    and dynamically grow the array
-
-
-    Current-Version: $Revision: 1.3 $
-    Last update:     $Date: 2003/02/27 22:37:20 $
-
-    Home-Page:               http://pasko.net/PyHtmlTable
-    Primary-Site:            http://pasko.net/PyHtmlTable
-
-    Written and debugged under Python 2.2.2 by Joe Pasko
+This module and its sole class, NxNArray, is based on version 1.3 of
+the twodarr class and module written by Joe Pasko (http://pasko.net).
 """
 
-import copy
+from copy import copy
 
 
 class NxNArray(object):
 
-    maxX    = 0
-    maxY    = 0
-    storage = []
-    filltype = ''
+    """A dynamic NxN array
 
-    def __init__(self, x=1, y=1, fill=None):
-        rowarr = []
-        colarr = []
-        newarr = []
-        self.maxX = x
-        self.maxY = y
+    NxNArray is a 2-dimensional array that can grow dynamically.
+    """
 
-        if fill == None:
-            self.filltype = ''
-        else:
-            self.filltype = fill
+    def __init__(self, rows=1, cols=1, fill=""):
+        self._rows = rows
+        self._cols = cols
+        self._fill = fill
+        row = []
+        col = []
+        for i in range(cols):
+            row.append(self._fill)
+        for i in range(rows):
+            col.append(copy(row))
+        self._array = col
 
-        for i in range(y):
-            rowarr.append(self.filltype)
+    def _get_array(self):
+        return self._array
 
-        for j in range(x):
-            newarr =  copy.copy(rowarr)
-            colarr.append(newarr)
+    array = property(_get_array, doc="Contents of the array")
 
-        self.storage = colarr
+    def _get_cols(self):
+        return self._cols
 
-    def get_arr(self):
-        return (self.storage)
+    cols = property(_get_cols, doc="Current number of columns")
+
+    def _get_rows(self):
+        return self._rows
+
+    rows = property(_get_rows, doc="Current number of rows")
+
+    def _get_fill(self):
+        return self._fill
+
+    fill = property(_get_fill, doc="Fill type")
 
     def add_col(self):
-        for f in range( self.maxX ):
-            self.storage[ f ].append(self.filltype)
-        self.maxY = self.maxY +1
+        for i in range(self._rows):
+            self._array[i].append(self._fill)
+        self._cols += 1
 
     def add_row(self):
-        nrow = []
-        for f in range(self.maxY):
-            nrow.append(self.filltype)
-        self.storage.append(copy.copy(nrow))
-        self.maxX = self.maxX + 1
+        row = []
+        for i in range(self._cols):
+            row.append(self._fill)
+        self._array.append(row)
+        self._rows += 1
 
-    def get_cell(self, x, y):
-        if x > self.maxX or y > self.maxY:
-            return None
-        return self.storage[x][y]
+    def get_cell(self, row, col):
+        try:
+            return self._array[row][col]
+        except IndexError:
+            return
 
-    def set_cell(self, x, y, data):
-        if x >= self.maxX:
-            for i in range(self.maxX - 1 , x):
-                self.add_row()
-        if y >= self.maxY:
-            for i in range(self.maxY - 1 , y):
-                self.add_col()
-        self.storage[x][y] = data
-
-    def get_max_row(self):
-        return self.maxX - 1
-
-    def get_max_col(self):
-        return self.maxY - 1
-
-    def get_num_rows(self):
-        return self.maxX
-
-    def get_num_cols(self):
-        return self.maxY
+    def set_cell(self, row, col, data):
+        for i in range(row - self._rows + 1):
+            self.add_row()
+        for i in range(col - self._cols + 1):
+            self.add_col()
+        self._array[row][col] = data
 
 
 def main():
-    b=NxNArray(1,4)
-    print b.get_arr()
-    print "MAX", b.get_max_row(), b.get_max_col()
+    b = NxNArray(1, 4)
+    print b.array
+    print "MAX", b.rows, b.cols
     b.add_col()
-    print "MAX", b.get_max_row(), b.get_max_col()
+    print "MAX", b.rows, b.cols
     b.add_row()
-    print "MAX", b.get_max_row(), b.get_max_col()
-    print b.get_arr()
-    b.set_cell(1,8,"NEW")
-    print b.get_arr()
+    print "MAX", b.rows, b.cols
+    print b.array
+    b.set_cell(1, 8, 'NEW')
+    print b.array
 
 
 if __name__ == "__main__":
