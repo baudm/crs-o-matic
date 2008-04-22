@@ -115,8 +115,8 @@ class HTMLTable(object):
         self.overwriteattrs = 0        # On data insertion, should we append or
                                        # overwrite cell attributes, defaults to
                                        # append
-        self.maxRow = self.htcells.get_num_rows()
-        self.maxCol = self.htcells.get_num_cols()
+        self.maxRow = self.htcells.rows
+        self.maxCol = self.htcells.cols
         self.defctype = "td"
         self.spantext = '<!-- spanned cell -->'
         if tattr !=None:                 # Handle table attrs if passed in
@@ -381,8 +381,8 @@ class HTMLTable(object):
         # May have need to grow the table in the NxNArray class
         # Query class to reset max row/cols if necessary
 
-        self.maxRow = self.htcells.get_num_rows()
-        self.maxCol = self.htcells.get_num_cols()
+        self.maxRow = self.htcells.rows
+        self.maxCol = self.htcells.cols
 
         if attrs != None:
             if self.overwriteattrs == 1:
@@ -590,7 +590,7 @@ class HTMLTable(object):
         self.maxRow = inarr.get_num_rows()
         self.maxCol = inarr.get_num_cols()
 
-        deffill     = self.htcells.filltype
+        deffill     = self.htcells.fill
 
         #Adding to bottom, no need to move data
         if self.maxRow - 1 == add_after_this_row :
@@ -601,8 +601,8 @@ class HTMLTable(object):
 
                 inarr.set_cell( i, j, deffill )
 
-            self.maxRow   = self.htcells.get_num_rows()
-            self.maxCol   = self.htcells.get_num_cols()
+            self.maxRow   = self.htcells.rows
+            self.maxCol   = self.htcells.cols
 
             return
 
@@ -612,15 +612,15 @@ class HTMLTable(object):
                 data2mv = inarr.get_cell( i-1,j )
                 inarr.set_cell( i,   j, data2mv )
                 inarr.set_cell( i-1, j, deffill )
-                self.maxRow   = self.htcells.get_num_rows()
-                self.maxCol   = self.htcells.get_num_cols()
+                self.maxRow   = self.htcells.rows
+                self.maxCol   = self.htcells.cols
 
     def __adjust_2d_array_cols_right( self, inarr, add_after_this_col ):
 
         self.maxRow = inarr.get_num_rows()
         self.maxCol = inarr.get_num_cols()
 
-        deffill     = self.htcells.filltype
+        deffill     = self.htcells.fill
 
 
         # Adding cols to right edge no need for data moving
@@ -633,8 +633,8 @@ class HTMLTable(object):
 
                 inarr.set_cell( j,   i, deffill )
 
-            self.maxRow   = self.htcells.get_num_rows()
-            self.maxCol   = self.htcells.get_num_cols()
+            self.maxRow   = self.htcells.rows
+            self.maxCol   = self.htcells.cols
 
             return
 
@@ -645,8 +645,8 @@ class HTMLTable(object):
                 inarr.set_cell( j,   i, data2mv )
                 inarr.set_cell( j, i-1,  deffill )
 
-        self.maxRow   = self.htcells.get_num_rows()
-        self.maxCol   = self.htcells.get_num_cols()
+        self.maxRow   = self.htcells.rows
+        self.maxCol   = self.htcells.cols
 
     def display( self ):
         """ Prints html table """
