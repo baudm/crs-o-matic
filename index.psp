@@ -8,24 +8,32 @@
   <body>
     <div id="wrap">
       <div id="content">
-        <p>
-          <b>CRS-o-matic</b> - a CRS schedule generator and probability and statistics tool written in pure Python<br/>
-          <br/>
-          This project is hosted at <a href="http://code.google.com/p/crs-o-matic/">Google Code</a>. For bug reports, feature requests, patch submissions, and the like, submit a new issue <a href="http://code.google.com/p/crs-o-matic/issues/list">here</a>.<br/>
-          <br/>
-          <b>Clarification of Terms:</b><br/>
-          * probability - the chances of getting a particular subject; probability = 100% means a 'sure shot'.<br/>
-          * mean - the mean of the probabilities of the subjects in a particular schedule.<br/>
-          * standard deviation - the standard deviation of the probabilities of the subjects in a particular schedule.<br/>
-          <br/>
-          <b>NOTES:</b><br/>
-          * You would want a schedule with a high probability mean and a low standard deviation.<br/>
-          * The code is currently not _that_ optimized and may eat a lot of resources. A <a href="http://probstat.sourceforge.net/">Python extension module (written in C)</a> is used to speed up the <a href="http://en.wikipedia.org/wiki/Cartesian_product">Cartesian product</a> calculations.<br/>
-          * Duplicate schedules (think of Math 17, 53, etc.) might be displayed. I'm still working on it.<br/>
-          <br/>
-          <b>TODO:</b><br/>
-          * More optimizations
-        </p>
+        <b>CRS-o-matic</b> - a CRS schedule generator and probability and statistics tool written in pure Python<br/>
+        <br/>
+        This project is hosted at <a href="http://code.google.com/p/crs-o-matic/">Google Code</a>. For bug reports, feature requests, patch submissions, and the like, submit a new issue <a href="http://code.google.com/p/crs-o-matic/issues/list">here</a>.<br/>
+        <br/>
+
+        <b>Clarification of Terms:</b>
+        <ul>
+          <li>probability - the chances of getting a particular subject; probability = 100% means a 'sure shot'.</li>
+          <li>mean - the mean of the probabilities of the subjects in a particular schedule.</li>
+          <li>standard deviation - the standard deviation of the probabilities of the subjects in a particular schedule.</li>
+        </ul>
+
+        <b>NOTES:</b>
+        <ul>
+          <li>You would want a schedule with a high probability mean and a low standard deviation.</li>
+          <li>The code is currently not _that_ optimized and may eat a lot of resources. A <a href="http://probstat.sourceforge.net/">Python extension module (written in C)</a> is used to speed up the <a href="http://en.wikipedia.org/wiki/Cartesian_product">Cartesian product</a> calculations.</li>
+          <li>Duplicate schedules (think of Math 17, 53, etc.) might be displayed. I'm still working on it.</li>
+        </ul>
+
+        <b>TODO:</b>
+        <ul>
+          <li>More optimizations</li>
+        </ul>
+
+        <b>Disclaimer:</b>
+        <p>All data presented by CRS-o-matic ('The Software') are just parsed from the <a href="http://crs.upd.edu.ph/schedule/">CRS website</a> and are not modified in any way. As such, I will not be responsible for any misleading or erroneous information produced by the software due to errors in the CRS website. I will also not be responsible for any misleading or erroneous information caused by bugs in the software. If you want to know how the software works, feel free to <a href="http://code.google.com/p/crs-o-matic/source/checkout">checkout</a> the source code via Subversion (SVN).</p>
 <%
 from math import sqrt
 
@@ -43,14 +51,20 @@ if form.has_key('searchkey') and form['searchkey']:
     search = [s for s in form['searchkey'].split('\r\n') if s]
     ay, sem = form['term'].split()
     classes = []
+%>
+<%= '<br />Desired classes:\n<ul>' %>
+<%
     for s in search:
         classes.append(crs.search(s, ay, sem))
+%>
+<%= "".join(['<li>', s, '</li>']) %>
+<%
 
     scheds = crs.get_schedules(*classes)
     p = 1
     for a in [len(a) for a in classes]: p *= a
 %>
-<%= "\nThere %s %d schedule%s without conflicts out of %d possible schedule%s:<br/>\n<br/>\n" % ('is' if len(scheds) == 1 else 'are', len(scheds), '' if len(scheds) == 1 else 's', p, '' if p == 1 else 's') %>
+<%= "</ul>\nThere %s %d schedule%s without conflicts out of %d possible schedule%s:<br/>\n<br/>\n" % ('is' if len(scheds) == 1 else 'are', len(scheds), '' if len(scheds) == 1 else 's', p, '' if p == 1 else 's') %>
 <%
     for s in scheds:
         prob_list = []
