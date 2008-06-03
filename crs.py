@@ -25,7 +25,8 @@ from htmltable import HTMLTable
 from probstat import Cartesian
 
 
-url = 'http://crs.upd.edu.ph/schedule/index.jsp'
+old_url = 'http://crs.upd.edu.ph/schedule/index.jsp'
+new_url = 'http://crs2.upd.edu.ph/schedule'
 
 
 #####
@@ -175,10 +176,11 @@ class CRSParser(HTMLParser):
 
     @staticmethod
     def _parse_sched(string):
+        days = ('M', 'T', 'W', 'Th', 'F', 'S', 'MTh', 'TF', 'TTh', 'WF', 'MTThF', 'TWThF', 'MTWThF')
         split = string.split()
         sched = {}
         for idx in range(len(split)):
-            if split[idx] in ('M', 'T', 'W', 'Th', 'F', 'MTh', 'TF', 'S', 'MTThF', 'MTWThF', 'TTh', 'WF'):
+            if split[idx] in days:
                 start, end = split[idx + 1].split('-')
                 time = CRSParser._parse_time(start, end)
                 for day in CRSParser._parse_day(split[idx]):
@@ -200,41 +202,51 @@ class CRSParser(HTMLParser):
             else:
                 dest[day] += source[day]
 
+    def feed(self, data):
+        # Workaround for malformed HTML of CRS2's search results.
+        data = data.replace('"style="', '" style="')
+        HTMLParser.feed(self, data)
+
     def reset(self):
         HTMLParser.reset(self)
         self.class_ = Class()
         self.results = []
         self.parents = []
+        self.start = False
         self.table = False
         self.row = False
         self.column = 0
 
     def handle_starttag(self, tag, attrs):
-        if self.row and tag == 'td' and attrs == [('class', 'textc')]:
+        if self.row and tag == 'td':
             self.column += 1
-        elif self.table and tag == 'tr' and attrs in ([('class', 'bodytdodd')], [('class', 'bodytdeven')]):
+        elif self.table and tag == 'tr':
             self.row = True
-        elif tag == 'table' and attrs == [('class', 'bodytable'), ('width', '80%')]:
+        elif tag == 'table':
             self.table = True
 
     def handle_endtag(self, tag):
         if self.row and tag == 'tr':
-            if self.class_.stats is not None and self.class_.name.lower() == self.target:
-                if self.class_.credits != 0.0:
-                    for parent in self.parents:
-                        if self.class_.section.startswith(parent.section):
-                            self._merge_sched(self.class_.schedule, parent.schedule)
-                    self.results.append(self.class_)
-                else:
-                    self.parents.append(self.class_)
-            self.class_ = Class()
+            if self.start:
+                if self.class_.stats is not None and self.class_.name.lower() == self.target:
+                    if self.class_.credits != 0.0:
+                        for parent in self.parents:
+                            if self.class_.section.startswith(parent.section):
+                                self._merge_sched(self.class_.schedule, parent.schedule)
+                        self.results.append(self.class_)
+                    else:
+                        self.parents.append(self.class_)
+                self.class_ = Class()
+            elif self.column == 6:
+                self.start = True
             self.row = False
             self.column = 0
         elif tag == 'table':
             self.table = False
+            self.start = False
 
     def handle_data(self, data):
-        if self.row:
+        if self.start and self.row:
             data = data.strip()
             if not data:
                 return
@@ -255,9 +267,11 @@ class CRSParser(HTMLParser):
                     return
             elif self.column == 4 and self.class_.schedule is None:
                 self.class_.schedule = self._parse_sched(data)
-            elif self.column == 5 and self.class_.stats is None:
+            elif self.column == 5 and (self.class_.stats is None or len(self.class_.stats) == 1):
+                if self.class_.stats is None:
+                    self.class_.stats = ()
                 try:
-                    self.class_.stats = tuple([int(i) for i in data.split() if i != '/'])
+                    self.class_.stats += tuple([int(i) for i in data.split() if i != '/'])
                 except ValueError:
                     return
 
@@ -287,8 +301,10 @@ class SemParser(HTMLParser):
 
 
 def search(subject, ay, sem):
+    """Search using the old CRS"""
+
     query = urllib.urlencode({'searchkey': subject, 'ay': ay, 'sem': sem})
-    socket = urllib.urlopen(url, query)
+    socket = urllib.urlopen(old_url, query)
     data = socket.read()
     socket.close()
     parser = CRSParser(subject)
@@ -297,8 +313,21 @@ def search(subject, ay, sem):
     return parser.results
 
 
+def search2(course_number):
+    """Search using CRS2 instead of the old CRS"""
+
+    query = urllib.urlencode({'course_num': course_number})
+    socket = urllib.urlopen("?".join([new_url, query]))
+    data = socket.read()
+    socket.close()
+    parser = CRSParser(course_number)
+    parser.feed(data)
+    parser.close()
+    return parser.results
+
+
 def get_semesters():
-    socket = urllib.urlopen(url)
+    socket = urllib.urlopen(old_url)
     data = socket.read()
     socket.close()
     parser = SemParser()
