@@ -1,6 +1,7 @@
 # $Id$
 #
 # htmltable - part of the CRS-o-matic project
+# Copyright (C) 2003  Joe Pasko
 # Copyright (C) 2008  Darwin M. Bautista
 #
 # This program is free software: you can redistribute it and/or modify
@@ -18,7 +19,7 @@
 
 """
 This module and its sole class, HTMLTable, is based on version 1.13 of
-the PyHtmlTable class and module written by Joe Pasko (http://pasko.net).
+the PyHtmlTable class and module written by Joe Pasko (http://pasko.net/PyHtmlTable/).
 """
 
 import sys

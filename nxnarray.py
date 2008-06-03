@@ -1,6 +1,7 @@
 # $Id$
 #
 # nxnarray - part of the CRS-o-matic project
+# Copyright (C) 2003  Joe Pasko
 # Copyright (C) 2008  Darwin M. Bautista
 #
 # This program is free software: you can redistribute it and/or modify
@@ -18,7 +19,7 @@
 
 """
 This module and its sole class, NxNArray, is based on version 1.3 of
-the twodarr class and module written by Joe Pasko (http://pasko.net).
+the twodarr class and module written by Joe Pasko (http://pasko.net/PyHtmlTable/).
 """
 
 from copy import copy

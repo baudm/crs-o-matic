@@ -76,8 +76,8 @@ class Schedule(list):
                 for dur in c.schedule[day]:
                     for dur_new in class_.schedule[day]:
                         if (dur_new[0] <= dur[0] and dur_new[1] >= dur[1]) or \
-                        (dur_new[0] >= dur[0] and dur_new[1] <= dur[1]) or \
-                        dur[0] < dur_new[0] < dur[1] or dur[0] < dur_new[1] < dur[1]:
+                           (dur_new[0] >= dur[0] and dur_new[1] <= dur[1]) or \
+                           dur[0] < dur_new[0] < dur[1] or dur[0] < dur_new[1] < dur[1]:
                             raise ScheduleConflict("%s conflicts with %s" % (class_, c))
 
     def append(self, class_):
