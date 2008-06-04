@@ -42,6 +42,8 @@ import crs
 
 if form.has_key('searchkey') and form['searchkey']:
     search = [s for s in form['searchkey'].split('\r\n') if s]
+    # Sort search queries to have the same output each and every time (for the same input).
+    search.sort()
     classes = []
 %>
 <%= '<br />Desired classes:\n<ul>' %>
@@ -75,6 +77,7 @@ if form.has_key('searchkey') and form['searchkey']:
                 prob_class = 0.0
 
             prob_list.append(prob_class)
+
         prob = sum(prob_list)/len(classes)
         stdev = sqrt(sum(map(lambda x: (x-prob)*(x-prob), prob_list))/len(classes))
 %>
