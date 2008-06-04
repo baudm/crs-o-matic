@@ -29,11 +29,6 @@ old_url = 'http://crs.upd.edu.ph/schedule/index.jsp'
 new_url = 'http://crs2.upd.edu.ph/schedule'
 
 
-#####
-### if the start and end times are the same, represent only as one class to avoid duplicates
-###
-### http://tomayko.com/articles/2004/12/15/the-static-method-thing
-
 def strftime(format, t):
     return time.strftime(format, (1900, 1, 1, t[0], t[1], 0, 0, 1, -1))
 
@@ -71,9 +66,7 @@ class Schedule(list):
     def _check_conflicts(self, class_):
         for c in self:
             for day in c.schedule:
-                try:
-                    class_.schedule[day]
-                except KeyError:
+                if not day in class_.schedule:
                     continue
                 for dur in c.schedule[day]:
                     for dur_new in class_.schedule[day]:
@@ -186,23 +179,19 @@ class CRSParser(HTMLParser):
                 start, end = split[idx + 1].split('-')
                 time = CRSParser._parse_time(start, end)
                 for day in CRSParser._parse_day(split[idx]):
-                    try:
-                        sched[day]
-                    except KeyError:
-                        sched[day] = [time]
-                    else:
+                    if day in sched:
                         sched[day].append(time)
+                    else:
+                        sched[day] = [time]
         return sched
 
     @staticmethod
     def _merge_sched(dest, source):
         for day in source:
-            try:
-                dest[day]
-            except KeyError:
-                dest[day] = source[day]
-            else:
+            if day in dest:
                 dest[day] += source[day]
+            else:
+                dest[day] = source[day]
 
     def feed(self, data):
         # Workaround for malformed HTML of CRS2's search results.
