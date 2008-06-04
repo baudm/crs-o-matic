@@ -49,13 +49,12 @@ def sum(li):
 
 if form.has_key('searchkey') and form['searchkey']:
     search = [s for s in form['searchkey'].split('\r\n') if s]
-    ay, sem = form['term'].split()
     classes = []
 %>
 <%= '<br />Desired classes:\n<ul>' %>
 <%
     for s in search:
-        classes.append(crs.search(s, ay, sem))
+        classes.append(crs.search2(s))
 %>
 <%= "".join(['<li>', s, '</li>']) %>
 <%
@@ -73,6 +72,9 @@ if form.has_key('searchkey') and form['searchkey']:
                 prob_class = float(c.stats[0] - c.stats[3])/c.stats[1]
             except ZeroDivisionError:
                 prob_class = 1.0
+            # FIXME: Workaround for CRS2
+            except IndexError: 
+                prob_class = 0
 
             if prob_class > 1.0:
                 prob_class = 1.0
