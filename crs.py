@@ -280,24 +280,20 @@ class SemParser(HTMLParser):
 
     def reset(self):
         HTMLParser.reset(self)
-        self.results = {}
-        self.anchor = False
-        self.ay_sem = None
+        self.span = False
+        self.result = None
 
     def handle_starttag(self, tag, attrs):
-        attrs = dict(attrs)
-        if tag == 'a' and attrs['class'] == 'header':
-            ay, sem = attrs['href'].split('=')[2:]
-            ay = ay.split('&')[0]
-            self.ay_sem = " ".join([ay, sem])
-            self.anchor = True
+        if tag == 'span':
+            self.span = True
 
     def handle_endtag(self, tag):
-        self.anchor = False
+        if tag == 'span':
+            self.span = False
 
     def handle_data(self, data):
-        if self.anchor:
-            self.results[self.ay_sem]= data
+        if self.span and self.result is None:
+            self.result = data
 
 
 def search(subject, ay, sem):
@@ -326,14 +322,14 @@ def search2(course_number):
     return parser.results
 
 
-def get_semesters():
-    socket = urllib.urlopen(old_url)
+def get_semester():
+    socket = urllib.urlopen(new_url)
     data = socket.read()
     socket.close()
     parser = SemParser()
     parser.feed(data)
     parser.close()
-    return parser.results
+    return parser.result
 
 
 def get_schedules(*classes):
