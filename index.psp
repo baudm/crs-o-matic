@@ -8,31 +8,31 @@
   <body>
     <div id="wrap">
       <div id="content">
-        <b>CRS-o-matic</b> - a CRS schedule generator and probability and statistics tool written in pure Python<br/>
+        <strong>CRS-o-matic</strong> - a CRS schedule generator and probability and statistics tool written in pure Python<br/>
         <br/>
         This project is hosted at <a href="http://code.google.com/p/crs-o-matic/">Google Code</a>. For bug reports, feature requests, patch submissions, and the like, submit a new issue <a href="http://code.google.com/p/crs-o-matic/issues/list">here</a>.<br/>
         <br/>
 
-        <b>Clarification of Terms:</b>
+        <strong>Clarification of Terms:</strong>
         <ul>
           <li>probability - the chances of getting a particular subject; probability = 100% means a 'sure shot'.</li>
           <li>mean - the mean of the probabilities of the subjects in a particular schedule.</li>
           <li>standard deviation - the standard deviation of the probabilities of the subjects in a particular schedule.</li>
         </ul>
 
-        <b>NOTES:</b>
+        <strong>NOTES:</strong>
         <ul>
           <li>You would want a schedule with a high probability mean and a low standard deviation.</li>
           <li>The code is currently not _that_ optimized and may eat a lot of resources. A <a href="http://probstat.sourceforge.net/">Python extension module (written in C)</a> is used to speed up the <a href="http://en.wikipedia.org/wiki/Cartesian_product">Cartesian product</a> calculations.</li>
           <li>Duplicate schedules (think of Math 17, 53, etc.) might be displayed. I'm still working on it.</li>
         </ul>
 
-        <b>TODO:</b>
+        <strong>TODO:</strong>
         <ul>
           <li>More optimizations</li>
         </ul>
 
-        <b>Disclaimer:</b>
+        <strong>Disclaimer:</strong>
         <p>All data presented by CRS-o-matic ('The Software') are just parsed from the <a href="http://crs.upd.edu.ph/schedule/">CRS website</a> and are not modified in any way. As such, I will not be responsible for any misleading or erroneous information produced by the software due to errors in the CRS website. I will also not be responsible for any misleading or erroneous information caused by bugs in the software. If you want to know how the software works, feel free to <a href="http://code.google.com/p/crs-o-matic/source/checkout">checkout</a> the source code via Subversion (SVN).</p>
 <%
 from math import sqrt
@@ -82,26 +82,12 @@ if form.has_key('searchkey') and form['searchkey']:
 <%= "\nminimum = %.2f%%, maximum = %.2f%%, mean = %.2f%%, standard deviation = %.2f%%<br/>\n<br/>\n" % (100*min(prob_list), 100*max(prob_list), 100*prob, 100*stdev) %>
 <%
 else:
-    # begin HTML
+    sem = crs.get_semester()
 %>
         <form id="form" method="post" action="">
           <fieldset>
-            <label for="term">Semester:</label><br/>
-            <select id="term" name="term">
-              <option value="2008 1">1st Semester 2008-2009</option>
-              <option value="2007 3">Summer 2008-2009</option>
-<%
-    sems = crs.get_semesters()
-    keys = sems.keys()
-    keys.reverse()
-    for sem in keys:
-        # begin for loop
-%>
-<%= '              <option value="%s">%s</option>' % (sem, sems[sem]) %>
-<%
-    # end for loop
-%>
-            </select><br/>
+            Semester: <strong><%= sem %></strong>
+            <br/>
             <label for="searchkey">Desired subjects (newline-separated):</label><br/>
             <textarea id="searchkey" name="searchkey" rows="10" cols="20"></textarea><br/>
             <input type="submit" value="Submit" />
