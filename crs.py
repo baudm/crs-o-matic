@@ -229,7 +229,7 @@ class CRSParser(HTMLParser):
         if self.row and tag == 'tr':
             if self.start:
                 if self.class_.stats is not None and self.class_.name.lower() == self.target:
-                    if self.class_.credits != 0.0:
+                    if self.class_.credits != 0:
                         for parent in self.parents:
                             if self.class_.section.startswith(parent.section):
                                 self._merge_sched(self.class_.schedule, parent.schedule)
@@ -262,7 +262,7 @@ class CRSParser(HTMLParser):
                     return
             elif self.column == 3 and self.class_.credits is None:
                 try:
-                    self.class_.credits = float(data)
+                    self.class_.credits = int(float(data))
                 except ValueError:
                     return
             elif self.column == 4 and self.class_.schedule is None:
