@@ -40,13 +40,6 @@ from math import sqrt
 import crs
 
 
-def sum(li):
-    s = 0
-    for e in li:
-        s += e
-    return s
-
-
 if form.has_key('searchkey') and form['searchkey']:
     search = [s for s in form['searchkey'].split('\r\n') if s]
     classes = []
