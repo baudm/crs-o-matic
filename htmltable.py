@@ -155,7 +155,7 @@ class HTMLTable(object):
         if col >= self.maxCol:
             return None
         for key, val in indict.iteritems():
-            if self.colattr.has_key(col):
+            if col in self.colattr:
                 pval = self.colattr[col]
                 self.colattr[col] = '%s %s="%s"' % (pval, key, val)
             else:
@@ -173,7 +173,7 @@ class HTMLTable(object):
         if row >= self.maxRow:
             return None
         for key, val in indict.iteritems():
-            if self.rowattr.has_key(row):
+            if row in self.rowattr:
                 pval = self.rowattr[row]
                 self.rowattr[row] = '%s %s="%s"' % (pval, key, val)
             else:
@@ -184,22 +184,22 @@ class HTMLTable(object):
             was set by setRowattrs
         """
 
-        return self.rowattr[row] if self.rowattr.has_key(row) else None
+        return self.rowattr[row] if row in self.rowattr else None
 
     def getColattrs(self, col):
         """Presently unused"""
 
-        return self.colattr[col] if self.colattr.has_key(col) else None
+        return self.colattr[col] if col in self.colattr else None
 
     def getCellattrs(self, row, col):
         """Returns attributes set for specific cell at rowidx colidx """
 
-        return self.cellattr[(row, col)] if self.cellattr.has_key((row, col)) else None
+        return self.cellattr[(row, col)] if (row, col) in self.cellattr else None
 
     def __getendCellattrs(self, row, col):
         """Presently unused"""
 
-        return self.endcellattr[(row, col)] if self.endcellattr.has_key((row, col)) else None
+        return self.endcellattr[(row, col)] if (row, col) in self.endcellattr else None
 
     def __setendCellattrs(self, row, col, indict):
         """Presently unused"""
@@ -208,7 +208,7 @@ class HTMLTable(object):
         if row >= self.maxRow or col >= self.maxCol:
             return None
         for key, val in indict.iteritems():
-            if self.endcellattr.has_key((row, col)):
+            if (row, col) in self.endcellattr:
                 pval = self.endcellattr[(row, col)]
                 self.endcellattr[(row, col)] = '%s %s="%s"' % (pval, key, val)
             else:
@@ -231,11 +231,11 @@ class HTMLTable(object):
         if self.overwriteattrs:
             self.clearCellattrs(row, col)
         for key, val  in indict.iteritems():
-            if self.cellattr.has_key((row, col)):
+            if (row, col) in self.cellattr:
                 pval = self.cellattr[(row, col)]
-                self.cellattr[(row, col)] = '%s %s="%s" ' % (pval, key, val)
+                self.cellattr[(row, col)] = '%s %s="%s"' % (pval, key, val)
             else:
-                self.cellattr[(row, col)] = '%s="%s" ' % (key, val)
+                self.cellattr[(row, col)] = '%s="%s"' % (key, val)
 
     def setTableattrs(self, indict):
         """ Sets table attributes in <table directive
@@ -264,7 +264,7 @@ class HTMLTable(object):
         # print "INdexs out of range"
         if row >= self.maxRow or col >= self.maxCol:
             return None
-        if self.celltype.has_key((row, col)):
+        if (row, col) in self.celltype:
             return self.celltype[(row, col)]
         else:
             return 'td'
@@ -325,14 +325,14 @@ class HTMLTable(object):
     def clearCellattrs(self, row, col):
         """ Clear cells attributes """
 
-        if not self.cellattr.has_key((row, col)):
+        if (row, col) not in self.cellattr:
             return None
         del self.cellattr[(row, col)]
 
     def clearRowattrs(self, row):
         """ Clear row attributes """
 
-        if not self.rowattr.has_key(row):
+        if row not in self.rowatt:
             return None
         del self.rowattr[row]
 
@@ -364,10 +364,10 @@ class HTMLTable(object):
 
     def __start_table(self):
         if self.tabattr:
-            stag = '<table%s>' % self.tabattr
+            stag = '<table%s>\n' % self.tabattr
             return stag
         else:
-            return '<table>'
+            return '<table>\n'
 
     def __has_only_rowcolsp_attrs(self, attrstr):
 
@@ -491,14 +491,14 @@ class HTMLTable(object):
         if add_after_this_row == -1:
 
             for i in range(self.maxRow, 0, -1):
-                if indict.has_key(i - 1):
+                if (i - 1) in indict:
                     val = indict[i - 1]
                     indict[i] = val
                     del indict[i - 1]
             return
 
         for i in range(self.maxRow, add_after_this_row, -1):
-            if indict.has_key(i - 1):
+            if (i - 1) in indict:
                 val = indict[i - 1]
                 indict[i] = val
                 del indict[i - 1]
@@ -508,14 +508,14 @@ class HTMLTable(object):
             return
         if add_after_this_col == -1:
             for i in range(self.maxCol, 0, -1):
-                if indict.has_key(i - 1):
+                if (i - 1) in indict:
                     val = indict[i - 1]
                     indict[i] = val
                     del indict[i - 1]
             return
 
         for i in range(self.maxCol, add_after_this_col, -1):
-            if indict.has_key(i - 1):
+            if (i - 1) in indict:
                 val = indict[i - 1]
                 indict[i] = val
                 del indict[i - 1]
@@ -629,7 +629,7 @@ class HTMLTable(object):
                 if td: # Spanned cells return None
                     htmltbl.append(td)
             htmltbl.append("".join([trc, '\n']))
-        htmltbl.append("".join([self.__end_table(), '\n\n']))
+        htmltbl.append("".join([self.__end_table(), '\n']))
         return "".join(htmltbl)
 
 
