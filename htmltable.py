@@ -332,7 +332,7 @@ class HTMLTable(object):
     def clearRowattrs(self, row):
         """ Clear row attributes """
 
-        if row not in self.rowatt:
+        if row not in self.rowattr:
             return None
         del self.rowattr[row]
 
