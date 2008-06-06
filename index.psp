@@ -23,7 +23,7 @@
         <strong>NOTES:</strong>
         <ul>
           <li>You would want a schedule with a high probability mean and a low standard deviation.</li>
-          <li>The code is currently not _that_ optimized and may eat a lot of resources. A <a href="http://probstat.sourceforge.net/">Python extension module (written in C)</a> is used to speed up the <a href="http://en.wikipedia.org/wiki/Cartesian_product">Cartesian product</a> calculations.</li>
+          <li>The code is currently not _that_ clean and optimized and may eat a lot of resources. A <a href="http://probstat.sourceforge.net/">Python extension module (written in C)</a> is used to speed up the <a href="http://en.wikipedia.org/wiki/Cartesian_product">Cartesian product</a> calculations.</li>
           <li>Duplicate schedules (think of Math 17, 53, etc.) might be displayed. I'm still working on it.</li>
         </ul>
 
@@ -49,7 +49,7 @@ if form.has_key('searchkey') and form['searchkey']:
 <%= '<br />Desired classes:\n<ul>' %>
 <%
     for s in search:
-        classes.append(crs.search2(s))
+        classes.append(crs.search(s))
 %>
 <%= "".join(['<li>', s, '</li>']) %>
 <%
@@ -61,28 +61,31 @@ if form.has_key('searchkey') and form['searchkey']:
 <%= "</ul>\nThere %s %d schedule%s without conflicts out of %d possible schedule%s:<br/>\n<br/>\n" % ('is' if len(scheds) == 1 else 'are', len(scheds), '' if len(scheds) == 1 else 's', p, '' if p == 1 else 's') %>
 <%
     for s in scheds:
-        prob_list = []
-        for c in s:
-            try:
-                prob_class = float(c.stats[0] - c.stats[3])/c.stats[1]
-            except ZeroDivisionError:
-                prob_class = 1.0
+        #prob_list = []
+        #for c in s:
+        #    try:
+        #        prob_class = float(c.stats[0] - c.stats[3])/c.stats[1]
+        #    except ZeroDivisionError:
+        #        prob_class = 1.0
             # FIXME: Workaround for CRS2
-            except IndexError: 
-                prob_class = 0
+        #    except IndexError: 
+        #        prob_class = 0
 
-            if prob_class > 1.0:
-                prob_class = 1.0
-            elif prob_class < 0.0:
-                prob_class = 0.0
+        #    if prob_class > 1.0:
+        #        prob_class = 1.0
+        #    elif prob_class < 0.0:
+        #        prob_class = 0.0
 
-            prob_list.append(prob_class)
+        #    prob_list.append(prob_class)
 
-        prob = sum(prob_list)/len(classes)
-        stdev = sqrt(sum(map(lambda x: (x-prob)*(x-prob), prob_list))/len(classes))
+        #prob = sum(prob_list)/len(classes)
+        #stdev = sqrt(sum(map(lambda x: (x-prob)*(x-prob), prob_list))/len(classes))
 %>
 <%= s.table() %>
-<%= "\nminimum = %.2f%%, maximum = %.2f%%, mean = %.2f%%, standard deviation = %.2f%%<br/>\n<br/>\n" % (100*min(prob_list), 100*max(prob_list), 100*prob, 100*stdev) %>
+        <br />
+<%
+        #"\nminimum = %.2f%%, maximum = %.2f%%, mean = %.2f%%, standard deviation = %.2f%%<br/>\n<br/>\n" % (100*min(prob_list), 100*max(prob_list), 100*prob, 100*stdev)
+%>
 <%
 else:
     sem = crs.get_semester()
