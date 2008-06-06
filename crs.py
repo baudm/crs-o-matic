@@ -184,14 +184,6 @@ class CRSParser(HTMLParser):
                         sched[day] = [time]
         return sched
 
-    @staticmethod
-    def _merge_sched(dest, source):
-        for day in source:
-            if day in dest:
-                dest[day] += source[day]
-            else:
-                dest[day] = source[day]
-
     def feed(self, data):
         # Workaround for malformed HTML of CRS2's search results.
         data = data.replace('"style="', '" style="')
