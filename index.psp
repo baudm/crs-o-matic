@@ -58,7 +58,7 @@ if form.has_key('searchkey') and form['searchkey']:
     p = 1
     for a in [len(a) for a in classes]: p *= a
 %>
-<%= "</ul>\nThere %s %d schedule%s without conflicts out of %d possible schedule%s:<br/>\n<br/>\n" % ('is' if len(scheds) == 1 else 'are', len(scheds), '' if len(scheds) == 1 else 's', p, '' if p == 1 else 's') %>
+<%= "</ul>\nTotal number of units: <strong>%d</strong><br /><br />\nThere %s %d schedule%s without conflicts out of %d possible schedule%s:<br/>\n<br/>\n" % (scheds[0].total_units, 'is' if len(scheds) == 1 else 'are', len(scheds), '' if len(scheds) == 1 else 's', p, '' if p == 1 else 's') %>
 <%
     for s in scheds:
         #prob_list = []
