@@ -16,17 +16,16 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import sets
 import time
 import urllib
+from sets import Set
 from HTMLParser import HTMLParser
 
 from htmltable import HTMLTable
 from probstat import Cartesian
 
 
-old_url = 'http://crs.upd.edu.ph/schedule/index.jsp'
-new_url = 'http://crs2.upd.edu.ph/schedule'
+url = 'http://crs2.upd.edu.ph/schedule'
 
 
 def strftime(format, t):
@@ -92,7 +91,7 @@ class Schedule(list):
             raise ValueError("no such class: %s" % (class_, ))
 
     def table(self):
-        self.times = list(sets.Set(self.times))
+        self.times = list(Set(self.times))
         self.times.sort()
         table = HTMLTable(len(self.times), 7, {'cellpadding': 0, 'cellspacing': 0})
         day_map = {'M': 1, 'T': 2, 'W': 3, 'Th': 4, 'F': 5, 'S': 6}
@@ -260,11 +259,12 @@ class CRSParser(HTMLParser):
                 self.class_.schedule = self._parse_sched(data)
             elif self.column == 5 and (self.class_.stats is None or len(self.class_.stats) == 1):
                 if self.class_.stats is None:
-                    self.class_.stats = ()
-                try:
-                    self.class_.stats += tuple([int(i) for i in data.split() if i != '/'])
-                except ValueError:
-                    return
+                    self.class_.stats = (int(data), )
+                else:
+                    try:
+                        self.class_.stats += tuple([int(i) for i in data.split() if i != '/'])
+                    except ValueError:
+                        return
 
 
 class SemParser(HTMLParser):
@@ -287,24 +287,11 @@ class SemParser(HTMLParser):
             self.result = data
 
 
-def search(subject, ay, sem):
-    """Search using the old CRS"""
-
-    query = urllib.urlencode({'searchkey': subject, 'ay': ay, 'sem': sem})
-    socket = urllib.urlopen(old_url, query)
-    data = socket.read()
-    socket.close()
-    parser = CRSParser(subject)
-    parser.feed(data)
-    parser.close()
-    return parser.results
-
-
-def search2(course_number):
-    """Search using CRS2 instead of the old CRS"""
+def search(course_number):
+    """Search using CRS2"""
 
     query = urllib.urlencode({'course_num': course_number})
-    socket = urllib.urlopen("?".join([new_url, query]))
+    socket = urllib.urlopen("?".join([url, query]))
     data = socket.read()
     socket.close()
     parser = CRSParser(course_number)
@@ -314,7 +301,7 @@ def search2(course_number):
 
 
 def get_semester():
-    socket = urllib.urlopen(new_url)
+    socket = urllib.urlopen(url)
     data = socket.read()
     socket.close()
     parser = SemParser()
