@@ -1,4 +1,4 @@
 DirectoryIndex index.psp
 AddHandler mod_python .psp .psp_
 PythonHandler mod_python.psp
-PythonDebug On
+PythonDebug Off
