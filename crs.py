@@ -170,7 +170,7 @@ class CRSParser(HTMLParser):
 
     @staticmethod
     def _parse_sched(string):
-        days = ('M', 'T', 'W', 'Th', 'F', 'S', 'MTh', 'TF', 'TTh', 'WF', 'MTThF', 'TWThF', 'MTWThF')
+        days = ('M', 'T', 'W', 'Th', 'F', 'S', 'TTh', 'WF', 'MTThF', 'TWThF', 'MTWThF')
         split = string.split()
         sched = {}
         for idx in range(len(split)):
