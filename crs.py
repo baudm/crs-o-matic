@@ -201,7 +201,6 @@ class CRSParser(HTMLParser):
         HTMLParser.reset(self)
         self.class_ = Class()
         self.results = []
-        self.parents = []
         self.start = False
         self.table = False
         self.row = False
@@ -218,14 +217,8 @@ class CRSParser(HTMLParser):
     def handle_endtag(self, tag):
         if self.row and tag == 'tr':
             if self.start:
-                if self.class_.stats is not None and self.class_.name.lower() == self.target:
-                    if self.class_.credits != 0:
-                        for parent in self.parents:
-                            if self.class_.section.startswith(parent.section):
-                                self._merge_sched(self.class_.schedule, parent.schedule)
-                        self.results.append(self.class_)
-                    else:
-                        self.parents.append(self.class_)
+                if self.class_.name.lower() == self.target:
+                    self.results.append(self.class_)
                 self.class_ = Class()
             elif self.column == 6:
                 self.start = True
