@@ -74,7 +74,7 @@ class HTMLTable(object):
     @staticmethod
     def _get_tag_html(tag, attrs):
         html = ['<', tag]
-        if attrs is not None and attrs:
+        if attrs and attrs is not None:
             for key, val in attrs.iteritems():
                 attr = ' %s="%s"' % (key, val)
                 html.append(attr)
@@ -83,7 +83,7 @@ class HTMLTable(object):
 
     @staticmethod
     def _has_only_rowcolsp_attrs(attrs):
-        if attrs is None or not attrs:
+        if not attrs or attrs is None:
             return False
         count = 0
         if 'colspan' in attrs:
@@ -102,7 +102,6 @@ class HTMLTable(object):
         # Must be a spanned cell, don't print anything
         if data == self._span_text:
             return
-
         ctype = self.get_cell_type(row, col)
         cattr = self.get_cell_attrs(row, col)
         cdefattr = self._default_cell_attrs
@@ -110,11 +109,10 @@ class HTMLTable(object):
 
         if cattr is not None:
             # If we only have a single rowspan/colspan attribute, merge it with
-            # the default cell attributes IF NO OthER ATTRIBUTES EXIST FOR THAT CELL
+            # the default cell attributes IF NO OTHER ATTRIBUTES EXIST FOR THAT CELL
             if cdefattr and HTMLTable._has_only_rowcolsp_attrs(cattr):
-                attrs = cdefattr
-                attrs.update(cattr)
-                start_tag = HTMLTable._get_tag_html(ctype, attrs)
+                cattr.update(cdefattr)
+                start_tag = HTMLTable._get_tag_html(ctype, cattr)
             else:
                 start_tag = HTMLTable._get_tag_html(ctype, cattr)
         else:
@@ -123,33 +121,28 @@ class HTMLTable(object):
         html = [start_tag]
         html.append(data)
         html.append(end_tag)
-
         return "".join(html)
 
-    # Run through the cells and adjust the tuple indexes down
     def _adjust_dbl_indx_dict_rows_down(self, indict, add_after_this_row):
+        """Run through the cells and adjust the tuple indexes down"""
         for i in range(self.rows, add_after_this_row, -1):
             for key, val in indict.iteritems():
                 row, col = map(int, key)
                 if row != i:
                     continue
-
                 indict[(row + 1, col)] = val
-
                 del indict[(row, col)]
 
-    # Run through the cells and adjust the tuple index down
     def _adjust_dict_rows_down(self, indict, add_after_this_row):
+        """Run through the cells and adjust the tuple index down"""
         if add_after_this_row == self.rows - 1:
             return
-        if add_after_this_row == -1:
-            for i in range(self.rows, 0, -1):
-                if (i - 1) in indict:
-                    val = indict[i - 1]
-                    indict[i] = val
-                    del indict[i - 1]
-            return
-        for i in range(self.rows, add_after_this_row, -1):
+        elif add_after_this_row == -1:
+            stop = 0
+        else:
+            stop = add_after_this_row
+
+        for i in range(self.rows, stop, -1):
             if (i - 1) in indict:
                 val = indict[i - 1]
                 indict[i] = val
@@ -158,15 +151,12 @@ class HTMLTable(object):
     def _adjust_dict_cols_right(self, indict, add_after_this_col):
         if add_after_this_col == self.cols - 1:
             return
-        if add_after_this_col == -1:
-            for i in range(self.cols, 0, -1):
-                if (i - 1) in indict:
-                    val = indict[i - 1]
-                    indict[i] = val
-                    del indict[i - 1]
-            return
+        elif add_after_this_col == -1:
+            stop = 0
+        else:
+            stop = add_after_this_col
 
-        for i in range(self.cols, add_after_this_col, -1):
+        for i in range(self.cols, stop, -1):
             if (i - 1) in indict:
                 val = indict[i - 1]
                 indict[i] = val
@@ -175,7 +165,7 @@ class HTMLTable(object):
     def _adjust_dbl_indx_dict_cols_right(self, indict, shift_after_this_col):
         for i in range(self.cols, shift_after_this_col, -1):
             for key, val in indict.iteritems():
-                (row, col) = (int(key[0]), int(key[1]))
+                row, col = map(int, key)
                 if col != i:
                     continue
                 indict[(row, col + 1)] = val
@@ -188,13 +178,13 @@ class HTMLTable(object):
             i = self.rows
             for j in range(self.cols):
                 inarr.set_cell(i, j, deffill)
-            return
-
-        for i in range(self.rows, add_after_this_row + 1, -1):
-            for j in range(self.cols):
-                data2mv = inarr.get_cell(i - 1, j)
-                inarr.set_cell(i, j, data2mv)
-                inarr.set_cell(i - 1, j, deffill)
+        else:
+            # Shift data
+            for i in range(self.rows, add_after_this_row + 1, -1):
+                for j in range(self.cols):
+                    data2mv = inarr.get_cell(i - 1, j)
+                    inarr.set_cell(i, j, data2mv)
+                    inarr.set_cell(i - 1, j, deffill)
 
     def _adjust_2d_array_cols_right(self, inarr, add_after_this_col):
         deffill = self._htcells.fill
@@ -203,13 +193,13 @@ class HTMLTable(object):
             i = self.cols
             for j in range(self.rows):
                 inarr.set_cell(j, i, deffill)
-            return
-        # Shift data
-        for i in range(self.cols, add_after_this_col + 1, -1):
-            for j in range(self.rows):
-                data2mv = inarr.get_cell(j, i - 1)
-                inarr.set_cell(j, i, data2mv)
-                inarr.set_cell(j, i - 1, deffill)
+        else:
+            # Shift data
+            for i in range(self.cols, add_after_this_col + 1, -1):
+                for j in range(self.rows):
+                    data2mv = inarr.get_cell(j, i - 1)
+                    inarr.set_cell(j, i, data2mv)
+                    inarr.set_cell(j, i - 1, deffill)
 
     def add_array_to_row(self, row, col, inarr, attrs=None):
         """Adds list of data specified by inarr to table object
@@ -219,12 +209,11 @@ class HTMLTable(object):
           by defining the attrs dictionary
 
           Note: Cell attribute insertion can be additive or overwriting depending
-                on calls to setReplaceCellattrs() or setAppendCellattrs()
+                on the value of self.overwriteattrs
 
                 Default is to append new attributes
         """
-        arlen = len(inarr)
-        for i in range(arlen):
+        for i in range(len(inarr)):
             self.set_cell_data(row, col + i, inarr[i], attrs)
 
     def add_array_to_col(self, row, col, inarr, attrs=None):
@@ -235,17 +224,15 @@ class HTMLTable(object):
           by defining the attrs dictionary
 
           Note: Cell attribute insertion can be additive or overwriting depending
-                on calls to setReplaceCellattrs() or setAppendCellattrs()
+                on the value of self.overwriteattrs
 
                 Default is to append new attributes
         """
-        arlen = len(inarr)
-        for i in range(arlen):
+        for i in range(len(inarr)):
             self.set_cell_data(row + i, col, inarr[i], attrs)
 
     def set_cell_colspan(self, row, col, numcells):
-        """Sets colspan starting at rowidx, colidx
-           spanning numcells
+        """Sets colspan starting at rowidx, colidx spanning numcells
            (Remember rows,cols start at 0,0)
         """
         for i in range(col + 1, col + numcells):
@@ -253,8 +240,7 @@ class HTMLTable(object):
         self.set_cell_attrs(row, col, {'colspan': numcells})
 
     def set_cell_rowspan(self, row, col, numcells):
-        """Sets rowspan starting at rowidx, colidx
-           spanning numcells
+        """Sets rowspan starting at rowidx, colidx spanning numcells
            (Remember rows,cols start at 0,0)
         """
         for i in range(row + 1, row + numcells):
@@ -263,42 +249,39 @@ class HTMLTable(object):
 
     def get_col_attrs(self, col):
         """Presently unused"""
-        return self._col_attrs[col] if col in self._col_attrs else None
+        if col in self._col_attrs:
+            return self._col_attrs[col]
 
     def set_col_attrs(self, col, indict):
         """Presently unused"""
-        # print "INdexs out of range"
-        if col >= self.cols:
-            return
-        self._col_attrs[col] = indict
+        if col < self.cols:
+            self._col_attrs[col] = indict
 
     def get_row_attrs(self, row):
         """ Returns attribute string for given rowidx which
             was set by set_row_attrs
         """
-        return self._row_attrs[row] if row in self._row_attrs else None
+        if row in self._row_attrs:
+            return self._row_attrs[row]
 
     def set_row_attrs(self, row, indict):
         """Sets attributes for give rowidx
 
            indict is a dictionary of key=val pairs
            {'bgcolor':'black'} translates to <tr bgcolor="black">
-
         """
-        # print "INdexs row out of range"
-        if row >= self.rows:
-            return
-        self._row_attrs[row] = indict
+        if row < self.rows:
+            self._row_attrs[row] = indict
 
     def clear_row_attrs(self, row):
         """ Clear row attributes """
-        if row not in self._row_attrs:
-            return
-        del self._row_attrs[row]
+        if row in self._row_attrs:
+            del self._row_attrs[row]
 
     def get_cell_attrs(self, row, col):
         """Returns attributes set for specific cell at rowidx colidx """
-        return self._cell_attrs[(row, col)] if (row, col) in self._cell_attrs else None
+        if (row, col) in self._cell_attrs:
+            return self._cell_attrs[(row, col)]
 
     def set_cell_attrs(self, row, col, indict):
         """ Sets cell attributes for cell at rowidx, colidx
@@ -310,7 +293,6 @@ class HTMLTable(object):
            <td bgcolor="black" width="200" >
            on output
         """
-        # print "INdexs out of range"
         if row >= self.rows or col >= self.cols:
             return
         if (row, col) not in self._cell_attrs or self.overwriteattrs:
@@ -320,43 +302,39 @@ class HTMLTable(object):
 
     def clear_cell_attrs(self, row, col):
         """ Clear cells attributes """
-        if (row, col) not in self._cell_attrs:
-            return
-        del self._cell_attrs[(row, col)]
+        if (row, col) in self._cell_attrs:
+            del self._cell_attrs[(row, col)]
 
     def get_cell_type(self, row, col):
         """Returns Celltypes which is td or th"""
-        # print "INdexs out of range"
         if row >= self.rows or col >= self.cols:
             return
-        if (row, col) in self._cell_type:
+        elif (row, col) in self._cell_type:
             return self._cell_type[(row, col)]
         else:
             return 'td'
 
     def set_cell_type(self, row, col, ctype):
         """ Celltypes can be td or th """
-        # print "INdexs out of range"
-        if row >= self.rows or col >= self.cols:
-            return
-        self._cell_type[(row, col)] = ctype
+        if row < self.rows and col < self.cols:
+            self._cell_type[(row, col)] = ctype
 
     def get_cell_data(self, row, col):
         """ Get cells stored data values
             Return an &nbsp if cell is None
         """
-        retstr = self._htcells.get_cell(row, col)
-        if retstr is None:
+        data = self._htcells.get_cell(row, col)
+        if data is None:
             return self._htcells.fill
         else:
-            return retstr
+            return data
 
     def set_cell_data(self, row, col, data, attrs=None):
         """Puts data into cell at rowidx, colidx
            Takes optional attribute dictionary for cell
         """
         # Force casting as a string
-        if data or data is not None:
+        if data and data is not None:
             data = str(data)
         else:
             data = self._htcells.fill
@@ -364,8 +342,6 @@ class HTMLTable(object):
         self._htcells.set_cell(row, col, data)
 
         if attrs is not None:
-            if self.overwriteattrs:
-                self.clear_cell_attrs(row, col)
             self.set_cell_attrs(row, col, attrs)
 
     def add_row(self, row):
@@ -374,8 +350,7 @@ class HTMLTable(object):
         """
         if row > self.rows:
             row = self.rows
-        # Update attrs for rowattr, cellattr, then call
-        # array updater,
+        # Update attrs for rowattr, cellattr, then call array updater,
         if row != self.rows - 1:  # Adding row to bottom, no need to move attrs
             self._adjust_dict_rows_down(self._row_attrs, row)
             self._adjust_dbl_indx_dict_rows_down(self._cell_attrs, row)
@@ -388,8 +363,7 @@ class HTMLTable(object):
         """
         if col > self.cols:
             col = self.cols
-        # Update attrs for colattr, cellattr, then call
-        # array updater,
+        # Update attrs for colattr, cellattr, then call array updater,
         if col != self.cols - 1:  # If Adding col to right,skip moving attrs
             self._adjust_dict_cols_right(self._row_attrs, col)
             self._adjust_dbl_indx_dict_cols_right(self._cell_attrs, col)
@@ -398,9 +372,8 @@ class HTMLTable(object):
 
     def return_html(self):
         """ Returns html table as string """
-        html = []
         table = HTMLTable._get_tag_html('table', self._attrs)
-        html.append(table)
+        html = [table]
         for row in range(self.rows):
             html.append('\n')
             attrs = self.get_row_attrs(row)
@@ -411,15 +384,14 @@ class HTMLTable(object):
                 if cell: # Spanned cells return
                     html.append(cell)
             html.append('</tr>')
-        html.append('\n')
-        html.append('</table>')
+        html.append('\n</table>')
         return "".join(html)
 
 
 def main():
-    print "Content-Type: text/html\n\n"
-    print """<html><head></head><body bgcolor="white"> """
-    print '<b> 2 by 2 table</b> '
+    print 'Content-Type: text/html\n\n'
+    print '<html><head></head><body bgcolor="white">\n\n'
+    print '<b> 2 by 2 table</b>'
 
     t = HTMLTable(2, 2, {'width': '400', 'border': 2, 'bgcolor': 'white'})
 
@@ -432,30 +404,29 @@ def main():
     t.set_cell_attrs(1, 1, {'bgcolor': 'red'})
     print t.return_html()
 
-    print """<b>Dynamically grow outside initial table boundaries by setting
-                cells outside current boundaries </b>"""
+    print '<b>Dynamically grow outside initial table boundaries by setting cells outside current boundaries </b>'
 
     t.set_cell_data(2, 0, 'T1 Cell 20') # Grow outside initial bounds
     t.set_cell_data(2, 1, 'T1 Cell 21')
     print t.return_html()
 
-    print '<p><b> Explicitly add row after row index 1 </b>'
+    print '<p><b>Explicitly add row after row index 1</b>'
 
     t.add_row(1) # Add a row after row index 1
     print t.return_html()
 
-    print '<p><b> Explicitly adding col after column index 1 </b>'
+    print '<p><b>Explicitly adding col after column index 1</b>'
 
     t.add_col(1) # Add a col after col index 1
     print t.return_html()
 
-    print '<hr><b> AFTER  row and col SPANNING </b>'
+    print '<hr><b>AFTER  row and col SPANNING</b>'
     t.set_cell_rowspan(1, 0, 2)  # Span cell at index row 1,col 0, make 2 high
     t.set_cell_colspan(1, 1, 2)  # colSpan cell at index row 1, col 1, make 2 wide
 
     print t.return_html()
 
-    print '<hr><b> Embed in new table </b>'
+    print '<hr><b>Embed in new table</b>'
 
     htmlstr = t.return_html()
 
