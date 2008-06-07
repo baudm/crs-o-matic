@@ -59,7 +59,6 @@ class Class(object):
 class Schedule(list):
 
     def __init__(self):
-        self.total_units = 0
         self.times = []
 
     def _check_conflicts(self, class_):
@@ -79,7 +78,6 @@ class Schedule(list):
             raise TypeError("argument should be an instance of Class")
         self._check_conflicts(class_)
         super(Schedule, self).append(class_)
-        self.total_units += class_.credits
         for day in class_.schedule:
             for duration in class_.schedule[day]:
                 self.times += duration
