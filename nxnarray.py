@@ -47,21 +47,19 @@ class NxNArray(object):
     def _get_array(self):
         return self._array
 
-    array = property(_get_array, doc="Contents of the array")
-
     def _get_cols(self):
         return self._cols
-
-    cols = property(_get_cols, doc="Current number of columns")
 
     def _get_rows(self):
         return self._rows
 
-    rows = property(_get_rows, doc="Current number of rows")
-
     def _get_fill(self):
         return self._fill
 
+    # Class properties
+    array = property(_get_array, doc="Contents of the array")
+    cols = property(_get_cols, doc="Current number of columns")
+    rows = property(_get_rows, doc="Current number of rows")
     fill = property(_get_fill, doc="Fill type")
 
     def add_col(self):
@@ -93,11 +91,11 @@ class NxNArray(object):
 def main():
     b = NxNArray(1, 4)
     print b.array
-    print "MAX", b.rows, b.cols
+    print "MAX", b.rows - 1, b.cols - 1
     b.add_col()
-    print "MAX", b.rows, b.cols
+    print "MAX", b.rows - 1, b.cols - 1
     b.add_row()
-    print "MAX", b.rows, b.cols
+    print "MAX", b.rows - 1, b.cols - 1
     print b.array
     b.set_cell(1, 8, 'NEW')
     print b.array
