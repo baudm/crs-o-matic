@@ -60,7 +60,7 @@ if form.has_key('searchkey') and form['searchkey']:
 <%
         else:
 %>
-<%= "".join(['<li><strong>', s, '</strong> <em>(no such class)</em></li>']) %>
+<%= "".join(['<li><del>', s, '</del> <em>(no such class)</em></li>']) %>
 <%
     scheds = crs.get_schedules(*classes)
     p = 1
