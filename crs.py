@@ -209,7 +209,7 @@ class CRSParser(HTMLParser):
     def handle_endtag(self, tag):
         if self.row and tag == 'tr':
             if self.start:
-                if self.class_.name.lower() == self.target:
+                if self.class_.stats is not None and self.class_.name.lower() == self.target:
                     self.results.append(self.class_)
                 self.class_ = Class()
             elif self.column == 6:
