@@ -22,8 +22,6 @@ This module and its sole class, HTMLTable, was forked from version 1.13 of
 the PyHtmlTable class and module written by Joe Pasko (http://pasko.net/PyHtmlTable/).
 """
 
-from copy import copy
-
 from nxnarray import NxNArray
 
 
@@ -87,14 +85,14 @@ class HTMLTable(object):
     def _has_only_rowcolsp_attrs(attrs):
         if attrs is None or not attrs:
             return False
-        attrs = copy(attrs)
+        count = 0
         if 'colspan' in attrs:
-            attrs.pop('colspan')
+            count += 1
 
         if 'rowspan' in attrs:
-            attrs.pop('rowspan')
+            count += 1
 
-        if attrs:
+        if len(attrs) - count > 0:
             return False
         else:
             return True
