@@ -49,9 +49,10 @@ if form.has_key('searchkey') and form['searchkey']:
 <%= '<br />Desired classes:\n<ul>' %>
 <%
     for s in search:
-        classes.append(crs.search(s))
+        c = crs.search(s)
+        classes.append(c)
 %>
-<%= "".join(['<li>', s, '</li>']) %>
+<%= "".join(['<li>', c[0].name, '</li>']) %>
 <%
 
     scheds = crs.get_schedules(*classes)
