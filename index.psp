@@ -45,16 +45,16 @@ if form.has_key('searchkey') and form['searchkey']:
     # Sort search queries to have the same output each and every time (for the same input).
     search.sort()
     classes = []
+    total_units = 0
 %>
 <%= '<br />Desired classes:\n<ul>' %>
 <%
-    total_units = 0
-
     for s in search:
         c = crs.search(s)
         if c:
             classes.append(c)
-            total_units += c[0].credits
+            if not c[0].name.startswith('CWTS') and not c[0].name.startswith('PE '):
+                total_units += c[0].credits
 %>
 <%= "".join(['<li>', c[0].name, '</li>']) %>
 <%
