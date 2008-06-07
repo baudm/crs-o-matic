@@ -18,7 +18,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 """
-This module and its sole class, NxNArray, is based on version 1.3 of
+This module and its sole class, NxNArray, was forked from version 1.3 of
 the twodarr class and module written by Joe Pasko (http://pasko.net/PyHtmlTable/).
 """
 
