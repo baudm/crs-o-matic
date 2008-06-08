@@ -118,7 +118,7 @@ class CRSParser(HTMLParser):
 
     def __init__(self, target):
         HTMLParser.__init__(self)
-        self.target = target.lower()
+        self.target = target.strip().lower()
 
     @staticmethod
     def _parse_time(start, end):
@@ -233,6 +233,9 @@ class CRSParser(HTMLParser):
                     self.class_.name, self.class_.section = data.rsplit(' ', 1)
                 except ValueError:
                     return
+                else:
+                    # Strip off any trailing whitespace, if any.
+                    self.class_.name = self.class_.name.rstrip()
             elif self.column == 3 and self.class_.credits is None:
                 try:
                     self.class_.credits = int(float(data))
