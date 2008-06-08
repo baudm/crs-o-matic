@@ -55,13 +55,16 @@ if form.has_key('searchkey') and form['searchkey']:
             classes.append(c)
             if not c[0].name.startswith('CWTS') and not c[0].name.startswith('PE '):
                 total_units += c[0].credits
-            #
 %>
-<%= "".join(['<li>', c[0].name, ' <em>(', str(c[0].credits), '.0)</em></li>']) %>
+<%= '<li>%s (%d.0)</li>' % (c[0].name, c[0].credits) %>
+<%
+            else:
+%>
+<%= '<li>%s <em>(%d.0)</em></li>' % (c[0].name, c[0].credits) %>
 <%
         else:
 %>
-<%= "".join(['<li><del>', s, '</del> <em>(no such class)</em></li>']) %>
+<%= '<li><del>%s</del> <em>(no such class)</em></li>' % (s, ) %>
 <%
     scheds = crs.get_schedules(*classes)
     p = 1
