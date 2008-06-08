@@ -41,7 +41,7 @@ import crs
 
 
 if form.has_key('searchkey') and form['searchkey']:
-    search = [s for s in form['searchkey'].split('\r\n') if s]
+    search = [s.strip() for s in form['searchkey'].split('\r\n') if s]
     # Sort search queries to have the same output each and every time (for the same input).
     search.sort()
     classes = []
