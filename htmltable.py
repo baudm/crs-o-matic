@@ -92,7 +92,7 @@ class HTMLTable(object):
         if 'rowspan' in attrs:
             count += 1
 
-        if len(attrs) - count > 0:
+        if len(attrs) > count:
             return False
         else:
             return True
@@ -112,9 +112,7 @@ class HTMLTable(object):
             # the default cell attributes IF NO OTHER ATTRIBUTES EXIST FOR THAT CELL
             if cdefattr and HTMLTable._has_only_rowcolsp_attrs(cattr):
                 cattr.update(cdefattr)
-                start_tag = HTMLTable._get_tag_html(ctype, cattr)
-            else:
-                start_tag = HTMLTable._get_tag_html(ctype, cattr)
+            start_tag = HTMLTable._get_tag_html(ctype, cattr)
         else:
             start_tag = HTMLTable._get_tag_html(ctype, cdefattr)
 
@@ -203,30 +201,30 @@ class HTMLTable(object):
 
     def add_array_to_row(self, row, col, inarr, attrs=None):
         """Adds list of data specified by inarr to table object
-          starting at row,col
+           starting at row,col
 
-          Optionally specify attributes to set on cells being added
-          by defining the attrs dictionary
+           Optionally specify attributes to set on cells being added
+           by defining the attrs dictionary
 
-          Note: Cell attribute insertion can be additive or overwriting depending
-                on the value of self.overwriteattrs
+           Note: Cell attribute insertion can be additive or overwriting depending
+                 on the value of self.overwriteattrs
 
-                Default is to append new attributes
+                 Default is to append new attributes
         """
         for i in range(len(inarr)):
             self.set_cell_data(row, col + i, inarr[i], attrs)
 
     def add_array_to_col(self, row, col, inarr, attrs=None):
         """Adds list of data specified by inarr to table object
-          starting at row,col
+           starting at row,col
 
-          Optionally specify attributes to set on cells being added
-          by defining the attrs dictionary
+           Optionally specify attributes to set on cells being added
+           by defining the attrs dictionary
 
-          Note: Cell attribute insertion can be additive or overwriting depending
-                on the value of self.overwriteattrs
+           Note: Cell attribute insertion can be additive or overwriting depending
+                 on the value of self.overwriteattrs
 
-                Default is to append new attributes
+                 Default is to append new attributes
         """
         for i in range(len(inarr)):
             self.set_cell_data(row + i, col, inarr[i], attrs)
@@ -252,56 +250,55 @@ class HTMLTable(object):
         if col in self._col_attrs:
             return self._col_attrs[col]
 
-    def set_col_attrs(self, col, indict):
+    def set_col_attrs(self, col, attrs):
         """Presently unused"""
         if col < self.cols:
-            self._col_attrs[col] = indict
+            self._col_attrs[col] = attrs
 
     def get_row_attrs(self, row):
-        """ Returns attribute string for given rowidx which
-            was set by set_row_attrs
+        """Returns attribute string for given rowidx which
+           was set by set_row_attrs
         """
         if row in self._row_attrs:
             return self._row_attrs[row]
 
-    def set_row_attrs(self, row, indict):
+    def set_row_attrs(self, row, attrs):
         """Sets attributes for give rowidx
 
-           indict is a dictionary of key=val pairs
+           attrs is a dictionary of key=val pairs
            {'bgcolor':'black'} translates to <tr bgcolor="black">
         """
         if row < self.rows:
-            self._row_attrs[row] = indict
+            self._row_attrs[row] = attrs
 
     def clear_row_attrs(self, row):
-        """ Clear row attributes """
+        """Clear row attributes"""
         if row in self._row_attrs:
             del self._row_attrs[row]
 
     def get_cell_attrs(self, row, col):
-        """Returns attributes set for specific cell at rowidx colidx """
+        """Returns attributes set for specific cell at rowidx colidx"""
         if (row, col) in self._cell_attrs:
             return self._cell_attrs[(row, col)]
 
-    def set_cell_attrs(self, row, col, indict):
-        """ Sets cell attributes for cell at rowidx, colidx
+    def set_cell_attrs(self, row, col, attrs):
+        """Sets cell attributes for cell at rowidx, colidx
 
-            indict is a dictionary of key=val pairs
+           attrs is a dictionary of key=val pairs
 
            {'bgcolor':'black', 'width':200} yields
 
-           <td bgcolor="black" width="200" >
-           on output
+           <td bgcolor="black" width="200"> on output
         """
         if row >= self.rows or col >= self.cols:
             return
         if (row, col) not in self._cell_attrs or self.overwriteattrs:
-            self._cell_attrs[(row, col)] = indict
+            self._cell_attrs[(row, col)] = attrs
         else:
-            self._cell_attrs[(row, col)].update(indict)
+            self._cell_attrs[(row, col)].update(attrs)
 
     def clear_cell_attrs(self, row, col):
-        """ Clear cells attributes """
+        """Clear cells attributes"""
         if (row, col) in self._cell_attrs:
             del self._cell_attrs[(row, col)]
 
@@ -315,13 +312,13 @@ class HTMLTable(object):
             return 'td'
 
     def set_cell_type(self, row, col, ctype):
-        """ Celltypes can be td or th """
+        """Celltypes can be td or th"""
         if row < self.rows and col < self.cols:
             self._cell_type[(row, col)] = ctype
 
     def get_cell_data(self, row, col):
-        """ Get cells stored data values
-            Return an &nbsp if cell is None
+        """Get cells stored data values
+           Return an &nbsp if cell is None
         """
         data = self._htcells.get_cell(row, col)
         if data is None:
@@ -345,37 +342,36 @@ class HTMLTable(object):
             self.set_cell_attrs(row, col, attrs)
 
     def add_row(self, row):
-        """ Adds row to table after specified rowidx.
-            Adding row at rowidx -1 adds row to top of table
+        """Adds row to table after specified rowidx.
+           Adding row at rowidx -1 adds row to top of table
         """
         if row > self.rows:
             row = self.rows
         # Update attrs for rowattr, cellattr, then call array updater,
-        if row != self.rows - 1:  # Adding row to bottom, no need to move attrs
+        if row != self.rows - 1: # Adding row to bottom, no need to move attrs
             self._adjust_dict_rows_down(self._row_attrs, row)
             self._adjust_dbl_indx_dict_rows_down(self._cell_attrs, row)
             self._adjust_dbl_indx_dict_rows_down(self._cell_type, row)
         self._adjust_2d_array_rows_down(self._htcells, row)
 
     def add_col(self, col):
-        """ Adds col to table after specified colidx
-            Adding col at colidx -1 adds col to left of table
+        """Adds col to table after specified colidx
+           Adding col at colidx -1 adds col to left of table
         """
         if col > self.cols:
             col = self.cols
         # Update attrs for colattr, cellattr, then call array updater,
-        if col != self.cols - 1:  # If Adding col to right,skip moving attrs
+        if col != self.cols - 1: # If Adding col to right,skip moving attrs
             self._adjust_dict_cols_right(self._row_attrs, col)
             self._adjust_dbl_indx_dict_cols_right(self._cell_attrs, col)
             self._adjust_dbl_indx_dict_cols_right(self._cell_type, col)
         self._adjust_2d_array_cols_right(self._htcells, col)
 
     def return_html(self):
-        """ Returns html table as string """
+        """Returns html table as string"""
         table = HTMLTable._get_tag_html('table', self._attrs)
-        html = [table]
+        html = [table, '\n']
         for row in range(self.rows):
-            html.append('\n')
             attrs = self.get_row_attrs(row)
             tr = HTMLTable._get_tag_html('tr', attrs)
             html.append(tr)
@@ -383,8 +379,8 @@ class HTMLTable(object):
                 cell = self._get_cell_html(row, col)
                 if cell: # Spanned cells return
                     html.append(cell)
-            html.append('</tr>')
-        html.append('\n</table>')
+            html.append('</tr>\n')
+        html.append('</table>')
         return "".join(html)
 
 
@@ -421,8 +417,8 @@ def main():
     print t.return_html()
 
     print '<hr><b>AFTER  row and col SPANNING</b>'
-    t.set_cell_rowspan(1, 0, 2)  # Span cell at index row 1,col 0, make 2 high
-    t.set_cell_colspan(1, 1, 2)  # colSpan cell at index row 1, col 1, make 2 wide
+    t.set_cell_rowspan(1, 0, 2) # Span cell at index row 1,col 0, make 2 high
+    t.set_cell_colspan(1, 1, 2) # colSpan cell at index row 1, col 1, make 2 wide
 
     print t.return_html()
 
