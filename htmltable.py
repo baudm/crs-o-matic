@@ -76,7 +76,7 @@ class HTMLTable(object):
         html = ['<', tag]
         if attrs and attrs is not None:
             for key, val in attrs.iteritems():
-                attr = ' %s="%s"' % (key, val)
+                attr = ' %s="%s"' % (key.lower(), val)
                 html.append(attr)
         html.append('>')
         return "".join(html)
@@ -426,14 +426,14 @@ def main():
 
     htmlstr = t.return_html()
 
-    nt = HTMLTable(1, 4, {'width': '800', 'border': 2, 'bgcolor': 'green'})
+    nt = HTMLTable(1, 4, {'Width': '800', 'Border': 2, 'BGcolor': 'green'})
     nt.set_cell_data(0, 0, 'Cell th....text left')
     nt.set_cell_data(0, 1, 'Text right')
     nt.set_cell_data(0, 2, htmlstr)
     nt.set_cell_attrs(0, 0, {'bgcolor': 'blue', 'width': 200, 'align': 'left'})
     nt.set_cell_attrs(0, 1, {'width': 200, 'align': 'right'})
     nt.set_cell_type(0, 0, 'th')
-    print t.return_html()
+    print nt.return_html()
     print '</body></html>'
 
 
