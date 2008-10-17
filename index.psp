@@ -35,9 +35,10 @@
         <strong>Disclaimer:</strong>
         <p>All data presented by CRS-o-matic ('The Software') are just parsed from the <a href="http://crs2.upd.edu.ph/schedule">CRS website</a> and are not modified in any way. As such, I will not be responsible for any misleading or erroneous information produced by the software due to errors in the CRS website. I will also not be responsible for any misleading or erroneous information caused by bugs in the software. If you want to know how the software works, feel free to <a href="http://code.google.com/p/crs-o-matic/source/checkout">checkout</a> the source code via Subversion (SVN).</p>
 <%
-#from math import sqrt
+from math import sqrt
 
 import crs
+from htmltable import HTMLTable
 
 
 if form.has_key('searchkey') and form['searchkey']:
@@ -72,32 +73,61 @@ if form.has_key('searchkey') and form['searchkey']:
 %>
 <%= "</ul>\nTotal number of units: <strong>%d.0</strong><br /><br />\nThere %s %d schedule%s without conflicts out of %d possible schedule%s:<br/>\n<br/>\n" % (total_units, 'is' if len(scheds) == 1 else 'are', len(scheds), '' if len(scheds) == 1 else 's', p, '' if p == 1 else 's') %>
 <%
+    s_ctr = 0
     for s in scheds:
-        #prob_list = []
-        #for c in s:
-        #    try:
-        #        prob_class = float(c.stats[0] - c.stats[3])/c.stats[1]
-        #    except ZeroDivisionError:
-        #        prob_class = 1.0
-            # FIXME: Workaround for CRS2
-        #    except IndexError: 
-        #        prob_class = 0
+        s_ctr += 1
+        table = HTMLTable(len(s), 2, {'class': 'schedule', 'cellpadding': 0, 'cellspacing': 0})
+        ctr = 0
+        table.set_cell_attrs(0, 1, {'class': 'probability'})
+        for header in ('Course', 'Prob.'):
+            table.set_cell_type(0, ctr, 'th')
+            table.set_cell_data(0, ctr, header)
+            ctr += 1
 
-        #    if prob_class > 1.0:
-        #        prob_class = 1.0
-        #    elif prob_class < 0.0:
-        #        prob_class = 0.0
+        ctr = 1
+        prob_list = []
+        for c in s:
+            try:
+                prob_class = float(c.stats[0])/c.stats[1]
+            except ZeroDivisionError:
+                prob_class = 1.0
 
-        #    prob_list.append(prob_class)
+            if prob_class > 1.0:
+                prob_class = 1.0
+            elif prob_class < 0.0:
+                prob_class = 0.0
 
-        #prob = sum(prob_list)/len(classes)
-        #stdev = sqrt(sum(map(lambda x: (x-prob)*(x-prob), prob_list))/len(classes))
+            prob_list.append(prob_class)
+
+            table.set_cell_data(ctr, 0, " ".join([c.name, c.section]))
+            table.set_cell_data(ctr, 1, "%.2f%%" % (100 * prob_class, ))
+            ctr += 1
+
+        prob = sum(prob_list)/len(classes)
+        stdev = sqrt(sum(map(lambda x: (x-prob)*(x-prob), prob_list))/len(classes))
+
+        table.set_cell_data(ctr, 0, 'Mean')
+        table.set_cell_data(ctr, 1, "%.2f%%" % (100 * prob, ))
+        table.set_cell_data(ctr + 1, 0, 'Std. Dev.')
+        table.set_cell_data(ctr + 1, 1, "%.2f%%" % (100 * stdev, ))
+        for i in range(ctr, ctr + 2):
+            table.set_cell_attrs(i, 0, {'class': 'highlight'})
+            table.set_cell_attrs(i, 1, {'class': 'highlight'})
+
+        # begin HTML
 %>
+        <h2><%= s_ctr %></h2>
+        <table class="parent-table">
+            <tr>
+                <td class="first">
 <%= s.table() %>
+                </td>
+                <td>
+<%= table.return_html() %>
+                </td>
+            </tr>
+        </table>
         <br />
-<%
-        #"\nminimum = %.2f%%, maximum = %.2f%%, mean = %.2f%%, standard deviation = %.2f%%<br/>\n<br/>\n" % (100*min(prob_list), 100*max(prob_list), 100*prob, 100*stdev)
-%>
 <%
 else:
     sem = crs.get_semester()

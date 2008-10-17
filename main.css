@@ -22,33 +22,39 @@ del {
   }
 
 
+a {
+    color: #73A822;
+    text-decoration: none;
+  }
+
+
+a:hover {
+    text-decoration: underline;
+  }
+
+
+table {
+    table-layout: fixed;
+  }
+
+
 #wrap {
-    background: #ffffff url('images/bg.png') repeat-y center center;
+    background: #ffffff url('images/content.png') repeat-x top center;
     margin: 0px auto;
-    width: 820px;
+    width: 96%;
+    border: solid #e1e1e1;
+    border-width: 0 2px 2px 2px;
   }
 
 
 #content {
-    background: #ffffff url('images/content.png') repeat-x top center;
     padding: 20px 15px 0px;
     margin: 0 10px;
     color: #666666;
   }
 
 
-#content a {
-    color: #73A822;
-    text-decoration: none;
-  }
-
-
-#content a:hover {
-    text-decoration: underline;
-  }
-
-
-#content table {
+.schedule {
     margin-top: 5px;
     width: 100%;
     border-collapse: collapse;
@@ -56,7 +62,7 @@ del {
   }
 
 
-#content table th {
+.schedule th {
     background: url('images/tableheader_bg.png') no-repeat center top;
     padding: 5px 10px;
     color: rgb(70,122,167);
@@ -67,11 +73,42 @@ del {
   }
 
 
-#content table td {
+.schedule td {
     padding: 5px 10px;
     color: #666666;
     border: 1px solid #CBD6DE;
     text-align: center;
+  }
+
+
+.probability {
+    width: 25%;
+  }
+
+
+.time {
+    width: 18%;
+  }
+
+
+.parent-table {
+    width: 100%;
+  }
+
+
+.parent-table td {
+    width: 20%;
+    vertical-align: top;
+  }
+
+
+.parent-table td table td {
+    vertical-align: middle;
+  }
+
+
+.parent-table td.first {
+    width: 80%;
   }
 
 
@@ -80,7 +117,7 @@ del {
   }
 
 
-.subject {
-    background: #F6F6F6;
+.highlight {
+    background: #f6f6f6;
   }
 

@@ -91,13 +91,14 @@ class Schedule(list):
     def table(self):
         self.times = list(Set(self.times))
         self.times.sort()
-        table = HTMLTable(len(self.times), 7, {'cellpadding': 0, 'cellspacing': 0})
+        table = HTMLTable(len(self.times), 7, {'class': 'schedule', 'cellpadding': 0, 'cellspacing': 0})
         day_map = {'M': 1, 'T': 2, 'W': 3, 'Th': 4, 'F': 5, 'S': 6}
         ctr = 0
         for header in ('Time', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'):
-            table.set_cell_data(0, ctr, header)
             table.set_cell_type(0, ctr, 'th')
+            table.set_cell_data(0, ctr, header)
             ctr += 1
+        table.set_cell_attrs(0, 0, {'class': 'time'})
         for idx in range(len(self.times) - 1):
             table.set_cell_data(idx+1, 0, "-".join([strftime("%I:%M%P", self.times[idx]), strftime("%I:%M%P", self.times[idx+1])]))
         for class_ in self:
@@ -109,8 +110,8 @@ class Schedule(list):
                     e = self.times.index(end)
                     if (e - s) != 1:
                         table.set_cell_rowspan(s + 1, day_i, e - s)
-                    table.set_cell_attrs(s + 1, day_i, {'class': 'subject'})
-                    table.set_cell_data(s + 1, day_i, " ".join([class_.name, class_.section]))
+                    table.set_cell_attrs(s + 1, day_i, {'class': 'highlight'})
+                    table.set_cell_data(s + 1, day_i, class_.name)
         return table.return_html()
 
 
