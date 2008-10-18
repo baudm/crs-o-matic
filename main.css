@@ -1,6 +1,6 @@
 
 body {
-    background: #eeeeee;
+    background: #eee;
     font: 62.5% Verdana, Arial, Helvetica, sans-serif;
     padding: 15px 0px;
     margin: 0px;
@@ -23,7 +23,7 @@ del {
 
 
 a {
-    color: #73A822;
+    color: #73a822;
     text-decoration: none;
   }
 
@@ -39,7 +39,7 @@ table {
 
 
 #wrap {
-    background: #ffffff url('images/content.png') repeat-x top center;
+    background: #fff url('images/content.png') repeat-x top center;
     margin: 0px auto;
     width: 96%;
     border: solid #e1e1e1;
@@ -50,7 +50,7 @@ table {
 #content {
     padding: 20px 15px 0px;
     margin: 0 10px;
-    color: #666666;
+    color: #666;
   }
 
 
@@ -65,8 +65,8 @@ table {
 .schedule th {
     background: url('images/tableheader_bg.png') no-repeat center top;
     padding: 5px 10px;
-    color: rgb(70,122,167);
-    border: 1px solid #CBD6DE;
+    color: #467ba7;
+    border: 1px solid #cbd6de;
     font-size: 1.1em;
     font-weight: bold;
     text-align: center;
@@ -75,7 +75,7 @@ table {
 
 .schedule td {
     padding: 5px 10px;
-    color: #666666;
+    color: #666;
     border: 1px solid #CBD6DE;
     text-align: center;
   }
@@ -121,3 +121,9 @@ table {
     background: #f6f6f6;
   }
 
+
+.copyright {
+    text-align: center;
+    border-top: 1px dashed #eee;
+    padding-top: 5px;
+  }
