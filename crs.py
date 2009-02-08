@@ -1,7 +1,7 @@
 # $Id$
 #
 # crs-o-matic - CRS Schedule Generator
-# Copyright (C) 2008  Darwin M. Bautista
+# Copyright (C) 2008-2009  Darwin M. Bautista
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -126,7 +126,7 @@ class CRSParser(HTMLParser):
         start = start.upper()
         end = end.upper()
 
-        if 'M' not in end:
+        if not end.endswith('M'):
             # Append 'M'.
             end = "".join([end, 'M'])
 
@@ -138,10 +138,10 @@ class CRSParser(HTMLParser):
             else:
                 break
         # Get the int value of the hours.
-        start_hour = int(start.split(':')[0].rstrip('M').rstrip('A').rstrip('P'))
+        start_hour = int(start.split(':')[0].rstrip('APM'))
         end_hour = int(strftime('%I', time_end))
 
-        if ('A' in start or 'P' in start) and 'M' not in start:
+        if start.endswith('A') or start.endswith('P'):
             # Append 'M'.
             start = "".join([start, 'M'])
         elif start_hour <= end_hour and end_hour != 12:
