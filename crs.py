@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # $Id$
 #
 # crs-o-matic - CRS Schedule Generator
@@ -18,7 +19,11 @@
 
 import time
 import urllib
-from sets import Set
+# sets module is deprecated in Python 2.6
+try:
+    set
+except NameError:
+    from sets import Set as set
 from HTMLParser import HTMLParser
 
 from htmltable import HTMLTable
@@ -89,7 +94,7 @@ class Schedule(list):
             raise ValueError("no such class: %s" % (class_, ))
 
     def table(self):
-        self.times = list(Set(self.times))
+        self.times = list(set(self.times))
         self.times.sort()
         table = HTMLTable(len(self.times), 7, {'class': 'schedule', 'cellpadding': 0, 'cellspacing': 0})
         day_map = {'M': 1, 'T': 2, 'W': 3, 'Th': 4, 'F': 5, 'S': 6}
