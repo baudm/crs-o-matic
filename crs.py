@@ -19,18 +19,19 @@
 
 import time
 import urllib
+from sgmllib import SGMLParser
 # sets module is deprecated in Python 2.6
 try:
     set
 except NameError:
     from sets import Set as set
-from HTMLParser import HTMLParser
 
 from htmltable import HTMLTable
 from probstat import Cartesian
 
 
-url = 'http://crs2.upd.edu.ph/schedule'
+AYSEM = '20092'
+URI = 'http://crs2.upd.edu.ph/schedule'
 
 
 def strftime(format, t):
@@ -120,10 +121,10 @@ class Schedule(list):
         return table.return_html()
 
 
-class CRSParser(HTMLParser):
+class CRSParser(SGMLParser):
 
     def __init__(self, target):
-        HTMLParser.__init__(self)
+        SGMLParser.__init__(self)
         self.target = target.strip().lower()
 
     @staticmethod
@@ -189,12 +190,10 @@ class CRSParser(HTMLParser):
         return sched
 
     def feed(self, data):
-        # Workaround for malformed HTML of CRS2's search results.
-        data = data.replace('"style="', '" style="')
-        HTMLParser.feed(self, data)
+        SGMLParser.feed(self, data)
 
     def reset(self):
-        HTMLParser.reset(self)
+        SGMLParser.reset(self)
         self.class_ = Class()
         self.results = []
         self.start = False
@@ -202,16 +201,19 @@ class CRSParser(HTMLParser):
         self.row = False
         self.column = 0
 
-    def handle_starttag(self, tag, attrs):
-        if self.row and tag == 'td':
-            self.column += 1
-        elif self.table and tag == 'tr':
-            self.row = True
-        elif tag == 'table':
-            self.table = True
+    def start_table(self, attrs):
+        self.table = True
 
-    def handle_endtag(self, tag):
-        if self.row and tag == 'tr':
+    def end_table(self):
+        self.table = False
+        self.start = False
+
+    def start_tr(self, attrs):
+        if self.table:
+            self.row = True
+
+    def end_tr(self):
+        if self.row:
             if self.start:
                 if self.class_.stats is not None and self.class_.name.lower() == self.target:
                     self.results.append(self.class_)
@@ -220,9 +222,10 @@ class CRSParser(HTMLParser):
                 self.start = True
             self.row = False
             self.column = 0
-        elif tag == 'table':
-            self.table = False
-            self.start = False
+
+    def start_td(self, attrs):
+        if self.row:
+            self.column += 1
 
     def handle_data(self, data):
         if self.start and self.row:
@@ -259,31 +262,30 @@ class CRSParser(HTMLParser):
                         return
 
 
-class SemParser(HTMLParser):
-
-    def reset(self):
-        HTMLParser.reset(self)
-        self.span = False
-        self.result = None
-
-    def handle_starttag(self, tag, attrs):
-        if tag == 'span':
-            self.span = True
-
-    def handle_endtag(self, tag):
-        if tag == 'span':
-            self.span = False
-
-    def handle_data(self, data):
-        if self.span and self.result is None:
-            self.result = data
+# FIXME: currently broken
+#class SemParser(SGMLParser):
+#
+#    def reset(self):
+#        SGMLParser.reset(self)
+#        self.span = False
+#        self.result = None
+#
+#    def start_span(self, attrs):
+#        self.span = True
+#
+#    def end_span(self):
+#        self.span = False
+#
+#    def handle_data(self, data):
+#        if self.span and self.result is None:
+#            self.result = data
 
 
 def search(course_number):
     """Search using CRS2"""
 
-    query = urllib.urlencode({'course_num': course_number})
-    socket = urllib.urlopen("?".join([url, query]))
+    query = urllib.urlencode({'aysem': AYSEM, 'course_num': course_number})
+    socket = urllib.urlopen("?".join([URI, query]))
     data = socket.read()
     socket.close()
     parser = CRSParser(course_number)
@@ -292,14 +294,15 @@ def search(course_number):
     return parser.results
 
 
-def get_semester():
-    socket = urllib.urlopen(url)
-    data = socket.read()
-    socket.close()
-    parser = SemParser()
-    parser.feed(data)
-    parser.close()
-    return parser.result
+# FIXME: currently broken
+#def get_semester():
+#    socket = urllib.urlopen(URI)
+#    data = socket.read()
+#    socket.close()
+#    parser = SemParser()
+#    parser.feed(data)
+#    parser.close()
+#    return parser.result
 
 
 def get_schedules(*classes):
