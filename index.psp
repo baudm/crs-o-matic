@@ -128,7 +128,8 @@ if form.has_key('searchkey') and form['searchkey']:
         <br />
 <%
 else:
-    sem = crs.get_semester()
+    #sem = crs.get_semester()
+    sem = '2nd Semester 2009-2010'
 %>
         <form id="form" method="post" action="">
           <fieldset>
