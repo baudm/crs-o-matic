@@ -20,7 +20,7 @@
 import time
 import urllib
 from sgmllib import SGMLParser
-# sets module is deprecated in Python 2.6
+# sets module is deprecated since Python 2.6
 try:
     set
 except NameError:
@@ -189,6 +189,14 @@ class CRSParser(SGMLParser):
                         sched[day] = [time]
         return sched
 
+    @staticmethod
+    def _merge_sched(dest, source):
+        for day in source:
+            if day in dest:
+                dest[day] += source[day]
+            else:
+                dest[day] = source[day]
+
     def feed(self, data):
         SGMLParser.feed(self, data)
 
@@ -196,10 +204,12 @@ class CRSParser(SGMLParser):
         SGMLParser.reset(self)
         self.class_ = Class()
         self.results = []
+        self.parents = {}
         self.start = False
         self.table = False
         self.row = False
         self.column = 0
+        self.last_section = ''
 
     def start_table(self, attrs):
         self.table = True
@@ -216,6 +226,15 @@ class CRSParser(SGMLParser):
         if self.row:
             if self.start:
                 if self.class_.stats is not None and self.class_.name.lower() == self.target:
+                    section_start = self.class_.section[:3]
+                    if section_start == self.last_section:
+                        parent = self.results.pop()
+                        self.parents[parent.section] = parent
+                        self._merge_sched(self.class_.schedule, parent.schedule)
+                    elif section_start in self.parents:
+                        parent = self.parents[section_start]
+                        self._merge_sched(self.class_.schedule, parent.schedule)
+                    self.last_section = self.class_.section
                     self.results.append(self.class_)
                 self.class_ = Class()
             elif self.column == 6:
