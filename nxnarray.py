@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # $Id$
 #
 # nxnarray - part of the CRS-o-matic project
@@ -44,23 +45,25 @@ class NxNArray(object):
             col.append(copy(row))
         self._array = col
 
-    def _get_array(self):
+    @property
+    def array(self):
+        """Contents of the array"""
         return self._array
 
-    def _get_cols(self):
+    @property
+    def cols(self):
+        """Current number of columns"""
         return self._cols
 
-    def _get_rows(self):
+    @property
+    def rows(self):
+        """Current number of rows"""
         return self._rows
 
-    def _get_fill(self):
+    @property
+    def fill(self):
+        """Fill type"""
         return self._fill
-
-    # Class properties
-    array = property(_get_array, doc="Contents of the array")
-    cols = property(_get_cols, doc="Current number of columns")
-    rows = property(_get_rows, doc="Current number of rows")
-    fill = property(_get_fill, doc="Fill type")
 
     def add_col(self):
         for i in range(self._rows):

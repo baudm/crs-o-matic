@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # $Id$
 #
 # htmltable - part of the CRS-o-matic project
@@ -51,14 +52,6 @@ class HTMLTable(object):
     def _set_attrs(self, attrs):
         self._attrs = attrs
 
-    def _get_rows(self):
-        # Don't use the NxNArray.rows property
-        return self._htcells._rows
-
-    def _get_cols(self):
-        # Don't use the NxNArray.cols property
-        return self._htcells._cols
-
     def _get_default_cell_attrs(self):
         return self._default_cell_attrs
 
@@ -67,9 +60,17 @@ class HTMLTable(object):
 
     # Class properties
     attrs = property(_get_attrs, _set_attrs, doc='Table attributes')
-    rows = property(_get_rows, doc='Current number of rows')
-    cols = property(_get_cols, doc='Current number of columns')
-    default_cell_attrs = property(_get_default_cell_attrs, _set_default_cell_attrs, doc="Default cell attributes")
+    default_cell_attrs = property(_get_default_cell_attrs, _set_default_cell_attrs, doc='Default cell attributes')
+
+    @property
+    def rows(self):
+        """Current number of rows"""
+        return self._htcells._rows
+
+    @property
+    def cols(self):
+        """Current number of columns"""
+        return self._htcells._cols
 
     @staticmethod
     def _get_tag_html(tag, attrs):
@@ -88,14 +89,9 @@ class HTMLTable(object):
         count = 0
         if 'colspan' in attrs:
             count += 1
-
         if 'rowspan' in attrs:
             count += 1
-
-        if len(attrs) > count:
-            return False
-        else:
-            return True
+        return (len(attrs) <= count)
 
     def _get_cell_html(self, row, col):
         data = self.get_cell_data(row, col)
@@ -106,16 +102,14 @@ class HTMLTable(object):
         cattr = self.get_cell_attrs(row, col)
         cdefattr = self._default_cell_attrs
         end_tag = '</%s>' % ctype
-
         if cattr is not None:
             # If we only have a single rowspan/colspan attribute, merge it with
             # the default cell attributes IF NO OTHER ATTRIBUTES EXIST FOR THAT CELL
-            if cdefattr and HTMLTable._has_only_rowcolsp_attrs(cattr):
+            if cdefattr and self._has_only_rowcolsp_attrs(cattr):
                 cattr.update(cdefattr)
-            start_tag = HTMLTable._get_tag_html(ctype, cattr)
+            start_tag = self._get_tag_html(ctype, cattr)
         else:
-            start_tag = HTMLTable._get_tag_html(ctype, cdefattr)
-
+            start_tag = self._get_tag_html(ctype, cdefattr)
         html = [start_tag]
         html.append(data)
         html.append(end_tag)
@@ -139,7 +133,6 @@ class HTMLTable(object):
             stop = 0
         else:
             stop = add_after_this_row
-
         for i in range(self.rows, stop, -1):
             if (i - 1) in indict:
                 val = indict[i - 1]
@@ -153,7 +146,6 @@ class HTMLTable(object):
             stop = 0
         else:
             stop = add_after_this_col
-
         for i in range(self.cols, stop, -1):
             if (i - 1) in indict:
                 val = indict[i - 1]
@@ -335,9 +327,7 @@ class HTMLTable(object):
             data = str(data)
         else:
             data = self._htcells.fill
-
         self._htcells.set_cell(row, col, data)
-
         if attrs is not None:
             self.set_cell_attrs(row, col, attrs)
 
@@ -369,11 +359,11 @@ class HTMLTable(object):
 
     def return_html(self):
         """Returns html table as string"""
-        table = HTMLTable._get_tag_html('table', self._attrs)
+        table = self._get_tag_html('table', self._attrs)
         html = [table, '\n']
         for row in range(self.rows):
             attrs = self.get_row_attrs(row)
-            tr = HTMLTable._get_tag_html('tr', attrs)
+            tr = self._get_tag_html('tr', attrs)
             html.append(tr)
             for col in range(self.cols):
                 cell = self._get_cell_html(row, col)
@@ -395,12 +385,11 @@ def main():
     t.set_cell_data(0, 1, 'T1 Cell 01')
     t.set_cell_data(1, 0, 'T1 Cell 01')
     t.set_cell_data(1, 1, 'T1 Cell 11')
-
     t.set_cell_attrs(0, 0, {'bgcolor': 'red', 'width': 100})
     t.set_cell_attrs(1, 1, {'bgcolor': 'red'})
     print t.return_html()
 
-    print '<b>Dynamically grow outside initial table boundaries by setting cells outside current boundaries </b>'
+    print '<b>Dynamically grow outside initial table boundaries by setting cells outside current boundaries</b>'
 
     t.set_cell_data(2, 0, 'T1 Cell 20') # Grow outside initial bounds
     t.set_cell_data(2, 1, 'T1 Cell 21')
