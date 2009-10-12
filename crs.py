@@ -19,6 +19,7 @@
 
 import time
 import urllib
+import urllib2
 from sgmllib import SGMLParser
 # sets module is deprecated since Python 2.6
 try:
@@ -300,14 +301,14 @@ class CRSParser(SGMLParser):
 #            self.result = data
 
 
-def search(course_number):
+def search(course_num, aysem=AYSEM):
     """Search using CRS2"""
 
-    query = urllib.urlencode({'aysem': AYSEM, 'course_num': course_number})
-    socket = urllib.urlopen("?".join([URI, query]))
-    data = socket.read()
-    socket.close()
-    parser = CRSParser(course_number)
+    query = urllib.urlencode({'aysem': aysem, 'course_num': course_num})
+    page = urllib2.urlopen("?".join([URI, query]))
+    data = page.read()
+    page.close()
+    parser = CRSParser(course_num)
     parser.feed(data)
     parser.close()
     return parser.results
