@@ -21,14 +21,19 @@ import time
 import urllib
 import urllib2
 from sgmllib import SGMLParser
+from htmltable import HTMLTable
 # sets module is deprecated since Python 2.6
 try:
     set
 except NameError:
     from sets import Set as set
-
-from htmltable import HTMLTable
-from probstat import Cartesian
+# Prefer itertools.product over probstat.Cartesian
+try:
+    from itertools import product
+except ImportError:
+    from probstat import Cartesian
+    def product(*params):
+        return Cartesian(list(params))
 
 
 AYSEM = '20092'
@@ -327,7 +332,7 @@ def search(course_num, aysem=AYSEM):
 
 def get_schedules(*classes):
     schedules = []
-    for combination in Cartesian(list(classes)):
+    for combination in product(*classes):
         sched = Schedule()
         try:
             map(sched.append, combination)
