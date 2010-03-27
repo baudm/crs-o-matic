@@ -2,7 +2,7 @@
 # $Id$
 #
 # crs-o-matic - CRS Schedule Generator
-# Copyright (C) 2008-2009  Darwin M. Bautista
+# Copyright (C) 2008-2010  Darwin M. Bautista
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -36,8 +36,8 @@ except ImportError:
         return Cartesian(list(params))
 
 
-AYSEM = '20092'
-URI = 'http://crs2.upd.edu.ph/schedule'
+AYSEM = '120093'
+URI = 'http://crs.upd.edu.ph/schedule'
 
 
 def strftime(format, t):
@@ -203,9 +203,6 @@ class CRSParser(SGMLParser):
             else:
                 dest[day] = source[day]
 
-    def feed(self, data):
-        SGMLParser.feed(self, data)
-
     def reset(self):
         SGMLParser.reset(self)
         self.class_ = Class()
@@ -243,10 +240,14 @@ class CRSParser(SGMLParser):
                     self.last_section = self.class_.section
                     self.results.append(self.class_)
                 self.class_ = Class()
-            elif self.column == 6:
-                self.start = True
+            #elif self.column == 6:
+            #    self.start = True
             self.row = False
             self.column = 0
+
+    def start_th(self, attrs):
+        if self.row:
+            self.start = True
 
     def start_td(self, attrs):
         if self.row:
@@ -287,47 +288,16 @@ class CRSParser(SGMLParser):
                         return
 
 
-# FIXME: currently broken
-#class SemParser(SGMLParser):
-#
-#    def reset(self):
-#        SGMLParser.reset(self)
-#        self.span = False
-#        self.result = None
-#
-#    def start_span(self, attrs):
-#        self.span = True
-#
-#    def end_span(self):
-#        self.span = False
-#
-#    def handle_data(self, data):
-#        if self.span and self.result is None:
-#            self.result = data
-
-
 def search(course_num, aysem=AYSEM):
-    """Search using CRS2"""
-
-    query = urllib.urlencode({'aysem': aysem, 'course_num': course_num})
-    page = urllib2.urlopen("?".join([URI, query]))
+    """Search using CRS"""
+    url = '%s/%s/%s' % (URI, aysem, urllib.quote(course_num))
+    page = urllib2.urlopen(url)
     data = page.read()
     page.close()
     parser = CRSParser(course_num)
     parser.feed(data)
     parser.close()
     return parser.results
-
-
-# FIXME: currently broken
-#def get_semester():
-#    socket = urllib.urlopen(URI)
-#    data = socket.read()
-#    socket.close()
-#    parser = SemParser()
-#    parser.feed(data)
-#    parser.close()
-#    return parser.result
 
 
 def get_schedules(*classes):
