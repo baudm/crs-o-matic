@@ -54,14 +54,15 @@ if form.has_key('searchkey') and form['searchkey']:
 <%= '<br />Desired classes:\n<ul>' %>
 <%
     for s in search:
-        s = s.split()
+        s = s.split(':', 1)
         if len(s) == 2:
-            s = ' '.join(s)
-            p = ''
-        elif len(s) == 3:
-            p = s[2]
-            s = ' '.join(s[:2])
-        c = crs.search(s, p)
+            course_num, section = s
+            section = section.strip()
+        else:
+            course_num = s[0]
+            section = ''
+        course_num = ' '.join(course_num.split())
+        c = crs.search(course_num, section)
         if c:
             classes.append(c)
             if not c[0].name.startswith('CWTS') and not c[0].name.startswith('PE '):
@@ -145,9 +146,9 @@ else:
 					<fieldset>
 						<em>Search tips:<br/>
 							<strong>Geog 1</strong> - all Geog 1 classes<br/>
-							<strong>Geog 1 TH</strong> - all Geog 1 TH* classes (TTh by convention)<br/>
-							<strong>Geog 1 THQ</strong> - all Geog 1 THQ* classes (includes THQ1, THQ2, and so on)<br/>
-							<strong>Geog 1 THQ1</strong> - THE Geog 1 THQ1 class
+							<strong>Geog 1: TH</strong> - all Geog 1 TH* classes (TTh by convention)<br/>
+							<strong>Geog 1: THQ</strong> - all Geog 1 THQ* classes (includes THQ1, THQ2, and so on)<br/>
+							<strong>Geog 1: THQ1</strong> - THE Geog 1 THQ1 class
 						</em><br/><br/>
 						Semester: <strong><%= SEM %></strong><br/>
 						<label for="searchkey">Desired subjects (newline-separated):</label><br/>
