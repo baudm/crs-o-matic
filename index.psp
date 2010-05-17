@@ -143,8 +143,13 @@ else:
 %>
 				<form id="form" method="post" action="">
 					<fieldset>
-						Semester: <strong><%= SEM %></strong>
-						<br/>
+						<em>Search tips:<br/>
+							<strong>Geog 1</strong> - all Geog 1 classes<br/>
+							<strong>Geog 1 TH</strong> - all Geog 1 TH* classes (TTh by convention)<br/>
+							<strong>Geog 1 THQ</strong> - all Geog 1 THQ* classes (includes THQ1, THQ2, and so on)<br/>
+							<strong>Geog 1 THQ1</strong> - THE Geog 1 THQ1 class
+						</em><br/><br/>
+						Semester: <strong><%= SEM %></strong><br/>
 						<label for="searchkey">Desired subjects (newline-separated):</label><br/>
 						<textarea id="searchkey" name="searchkey" rows="10" cols="20"></textarea><br/>
 						<input type="submit" value="Submit" />
