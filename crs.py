@@ -143,8 +143,9 @@ class Schedule(list):
 
 class CRSParser(object):
     
-    def __init__(self, target):
-        self.target = target.strip().lower()
+    def __init__(self, course_num, section=''):
+        self.course_num = course_num.strip().lower()
+        self.section = section.strip().upper()
         
     def feed(self, data):
         results = []
@@ -157,8 +158,11 @@ class CRSParser(object):
             # name, section
             name = name.renderContents().strip().split('<br')[0]
             kls.name, kls.section = name.rsplit(' ', 1)
-            # Filter classes
-            if kls.name.lower() != self.target:
+            # Filter classes based on the course number
+            if kls.name.lower() != self.course_num:
+                continue
+            # Filter based on section preference
+            if self.section and not kls.section.startswith(self.section):
                 continue
             # credits
             kls.credits = float(credits.text)
@@ -241,13 +245,13 @@ class CRSParser(object):
                 dest[day] = source[day]
 
 
-def search(course_num, aysem=AYSEM):
+def search(course_num, section='', aysem=AYSEM):
     """Search using CRS"""
     url = '%s/%s/%s' % (URI, aysem, urllib.quote(course_num))
     page = urllib2.urlopen(url)
     data = page.read()
     page.close()
-    parser = CRSParser(course_num)
+    parser = CRSParser(course_num, section)
     return parser.feed(data)
 
 
