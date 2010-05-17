@@ -90,7 +90,7 @@ if form.has_key('searchkey') and form['searchkey']:
             table = HTMLTable(len(s), 2, {'class': 'schedule', 'cellpadding': 0, 'cellspacing': 0})
             ctr = 0
             table.set_cell_attrs(0, 1, {'class': 'probability'})
-            for header in ('Course', 'Prob.'):
+            for header in ('Class', 'Prob.'):
                 table.set_cell_type(0, ctr, 'th')
                 table.set_cell_data(0, ctr, header)
                 ctr += 1
