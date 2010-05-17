@@ -41,7 +41,7 @@ import crs
 from htmltable import HTMLTable
 
 
-SEM = 'Summer 2010'
+SEM = 'First Semester AY 2010-2011'
 
 
 if form.has_key('searchkey') and form['searchkey']:
@@ -54,7 +54,14 @@ if form.has_key('searchkey') and form['searchkey']:
 <%= '<br />Desired classes:\n<ul>' %>
 <%
     for s in search:
-        c = crs.search(s)
+        s = s.split()
+        if len(s) == 2:
+            s = ' '.join(s)
+            p = ''
+        elif len(s) == 3:
+            p = s[2]
+            s = ' '.join(s[:2])
+        c = crs.search(s, p)
         if c:
             classes.append(c)
             if not c[0].name.startswith('CWTS') and not c[0].name.startswith('PE '):
