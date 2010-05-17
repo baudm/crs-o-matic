@@ -20,7 +20,7 @@
 import time
 import urllib
 import urllib2
-from sgmllib import SGMLParser
+from BeautifulSoup import BeautifulSoup
 from htmltable import HTMLTable
 # sets module is deprecated since Python 2.6
 try:
@@ -50,7 +50,7 @@ except ImportError:
             return Cartesian(list(args))
 
 
-AYSEM = '120093'
+AYSEM = '120101'
 URI = 'http://crs.upd.edu.ph/schedule'
 
 
@@ -141,11 +141,34 @@ class Schedule(list):
         return table.return_html()
 
 
-class CRSParser(SGMLParser):
-
+class CRSParser(object):
+    
     def __init__(self, target):
-        SGMLParser.__init__(self)
         self.target = target.strip().lower()
+        
+    def feed(self, data):
+        results = []
+        soup = BeautifulSoup(data)
+        for tr in soup.find('table', id='tbl_schedule').find('tbody').findAll('tr'):
+            code, name, credits, schedule, stats, remarks = tr.findAll('td')
+            kls = Class()
+            # code
+            kls.code = code.text.encode('utf-8')
+            # name, section
+            name = name.renderContents().strip().split('<br')[0]
+            kls.name, kls.section = name.rsplit(' ', 1)
+            # Filter classes
+            if kls.name.lower() != self.target:
+                continue
+            # credits
+            kls.credits = float(credits.text)
+            # schedule
+            schedule = schedule.renderContents().strip().split('<br')[0]
+            kls.schedule = self._parse_sched(schedule)
+            # stats
+            kls.stats = tuple([int(i.strip('/')) for i in stats.text.split() if i != '/'])
+            results.append(kls)
+        return results
 
     @staticmethod
     def _parse_time(start, end):
@@ -217,90 +240,6 @@ class CRSParser(SGMLParser):
             else:
                 dest[day] = source[day]
 
-    def reset(self):
-        SGMLParser.reset(self)
-        self.class_ = Class()
-        self.results = []
-        self.parents = {}
-        self.start = False
-        self.table = False
-        self.row = False
-        self.column = 0
-        self.last_section = ''
-
-    def start_table(self, attrs):
-        self.table = True
-
-    def end_table(self):
-        self.table = False
-        self.start = False
-
-    def start_tr(self, attrs):
-        if self.table:
-            self.row = True
-
-    def end_tr(self):
-        if self.row:
-            if self.start:
-                if self.class_.stats is not None and self.class_.name.lower() == self.target:
-                    section_start = self.class_.section[:3]
-                    if section_start == self.last_section:
-                        parent = self.results.pop()
-                        self.parents[parent.section] = parent
-                        self._merge_sched(self.class_.schedule, parent.schedule)
-                    elif section_start in self.parents:
-                        parent = self.parents[section_start]
-                        self._merge_sched(self.class_.schedule, parent.schedule)
-                    self.last_section = self.class_.section
-                    self.results.append(self.class_)
-                self.class_ = Class()
-            #elif self.column == 6:
-            #    self.start = True
-            self.row = False
-            self.column = 0
-
-    def start_th(self, attrs):
-        if self.row:
-            self.start = True
-
-    def start_td(self, attrs):
-        if self.row:
-            self.column += 1
-
-    def handle_data(self, data):
-        if self.start and self.row:
-            data = data.strip()
-            if not data:
-                return
-            if self.column == 1 and self.class_.code is None:
-                try:
-                    self.class_.code = int(data)
-                except ValueError:
-                    return
-            elif self.column == 2 and self.class_.name is None and self.class_.section is None:
-                try:
-                    self.class_.name, self.class_.section = data.rsplit(' ', 1)
-                except ValueError:
-                    return
-                else:
-                    # Strip off any trailing whitespace, if any.
-                    self.class_.name = self.class_.name.rstrip()
-            elif self.column == 3 and self.class_.credits is None:
-                try:
-                    self.class_.credits = int(float(data))
-                except ValueError:
-                    return
-            elif self.column == 4 and self.class_.schedule is None:
-                self.class_.schedule = self._parse_sched(data)
-            elif self.column == 5 and (self.class_.stats is None or len(self.class_.stats) == 1):
-                if self.class_.stats is None:
-                    self.class_.stats = (int(data), )
-                else:
-                    try:
-                        self.class_.stats += tuple([int(i) for i in data.split() if i != '/'])
-                    except ValueError:
-                        return
-
 
 def search(course_num, aysem=AYSEM):
     """Search using CRS"""
@@ -309,9 +248,7 @@ def search(course_num, aysem=AYSEM):
     data = page.read()
     page.close()
     parser = CRSParser(course_num)
-    parser.feed(data)
-    parser.close()
-    return parser.results
+    return parser.feed(data)
 
 
 def get_schedules(*classes):
