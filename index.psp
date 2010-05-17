@@ -100,7 +100,7 @@ if form.has_key('searchkey') and form['searchkey']:
             prob_list = []
             for c in s:
                 try:
-                    prob_class = float(c.stats[0])/c.stats[1]
+                    prob_class = float(c.stats[0])/c.stats[2]
                 except ZeroDivisionError:
                     prob_class = 1.0
 
