@@ -56,13 +56,13 @@ if form.has_key('searchkey') and form['searchkey']:
     for s in search:
         s = s.split(':', 1)
         if len(s) == 2:
-            course_num, section = s
-            section = section.strip()
+            course_num, filters = s
+            filters = [i.strip() for i in filters.split(',')]
         else:
             course_num = s[0]
-            section = ''
+            filters = []
         course_num = ' '.join(course_num.split())
-        c = crs.search(course_num, section)
+        c = crs.search(course_num, filters)
         if c:
             classes.append(c)
             if not c[0].name.startswith('CWTS') and not c[0].name.startswith('PE '):
@@ -144,11 +144,17 @@ else:
 %>
 				<form id="form" method="post" action="">
 					<fieldset>
-						<em>Search tips:<br/>
+						<em>Basic Filtering:<br/>
 							<strong>Geog 1</strong> - all Geog 1 classes<br/>
 							<strong>Geog 1: TH</strong> - all Geog 1 TH* classes (TTh by convention)<br/>
 							<strong>Geog 1: THQ</strong> - all Geog 1 THQ* classes (includes THQ1, THQ2, and so on)<br/>
-							<strong>Geog 1: THQ1</strong> - THE Geog 1 THQ1 class
+							<strong>Geog 1: THQ1</strong> - THE Geog 1 THQ1 class<br/>
+							<strong>Geog 1: !THQ</strong> - all Geog 1 classes excluding THQ* classes<br/>
+							<br/>
+							Advanced Filtering:<br/>
+							<strong>Geog 1: TH, WFW</strong> - all Geog 1 TH* and WFW* classes<br/>
+							<strong>Geog 1: TH, !THQ</strong> - Geog 1 TH* classes excluding THQ* classes<br/>
+							<strong>Geog 1: TH, !THQ, WFW1, !THY</strong> - Geog 1 TH* and WFW1 classes excluding THQ* and THY* classes<br/>
 						</em><br/><br/>
 						Semester: <strong><%= SEM %></strong><br/>
 						<label for="searchkey">Desired subjects (newline-separated):</label><br/>
