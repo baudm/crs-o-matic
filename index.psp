@@ -144,18 +144,18 @@ else:
 %>
 				<form id="form" method="post" action="">
 					<fieldset>
-						<em>Basic Filtering:<br/>
-							<strong>Geog 1</strong> - all Geog 1 classes<br/>
-							<strong>Geog 1: TH</strong> - all Geog 1 TH* classes (TTh by convention)<br/>
-							<strong>Geog 1: THQ</strong> - all Geog 1 THQ* classes (includes THQ1, THQ2, and so on)<br/>
-							<strong>Geog 1: THQ1</strong> - THE Geog 1 THQ1 class<br/>
-							<strong>Geog 1: !THQ</strong> - all Geog 1 classes excluding THQ* classes<br/>
-							<br/>
-							Advanced Filtering:<br/>
-							<strong>Geog 1: TH, WFW</strong> - all Geog 1 TH* and WFW* classes<br/>
-							<strong>Geog 1: TH, !THQ</strong> - Geog 1 TH* classes excluding THQ* classes<br/>
-							<strong>Geog 1: TH, !THQ, WFW1, !THY</strong> - Geog 1 TH* and WFW1 classes excluding THQ* and THY* classes<br/>
-						</em><br/><br/>
+						Basic Filtering:<br/>
+						<strong>Geog 1</strong> - <em>all Geog 1 classes</em><br/>
+						<strong>Geog 1: TH</strong> - <em>all Geog 1 TH* classes (TTh by convention)</em><br/>
+						<strong>Geog 1: THQ</strong> - <em>all Geog 1 THQ* classes (includes THQ1, THQ2, and so on)</em><br/>
+						<strong>Geog 1: THQ1</strong> - <em>THE Geog 1 THQ1 class</em><br/>
+						<strong>Geog 1: !THQ</strong> - <em>all Geog 1 classes excluding THQ* classes</em><br/>
+						<br/>
+						Advanced Filtering:<br/>
+						<strong>Geog 1: TH, WFW</strong> - <em>all Geog 1 TH* and WFW* classes</em><br/>
+						<strong>Geog 1: TH, !THQ</strong> - <em>Geog 1 TH* classes excluding THQ* classes</em><br/>
+						<strong>Geog 1: TH, !THQ, WFW1, !THY</strong> - <em>Geog 1 TH* and WFW1 classes excluding THQ* and THY* classes</em><br/>
+						<br/><br/>
 						Semester: <strong><%= SEM %></strong><br/>
 						<label for="searchkey">Desired subjects (newline-separated):</label><br/>
 						<textarea id="searchkey" name="searchkey" rows="10" cols="20"></textarea><br/>
