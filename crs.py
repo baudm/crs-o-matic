@@ -156,7 +156,10 @@ class CRSParser(object):
         results = []
         soup = BeautifulSoup(data)
         for tr in soup.find('table', id='tbl_schedule').find('tbody').findAll('tr'):
-            code, name, credits, schedule, stats, remarks = tr.findAll('td')
+            try:
+                code, name, credits, schedule, stats, remarks = tr.findAll('td')
+            except ValueError:
+                continue
             kls = Class()
             # code
             kls.code = code.text.encode('utf-8')
