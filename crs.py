@@ -100,19 +100,11 @@ class Schedule(list):
                             raise ScheduleConflict("%s conflicts with %s" % (class_, c))
 
     def append(self, class_):
-        if not isinstance(class_, Class):
-            raise TypeError("argument should be an instance of Class")
         self._check_conflicts(class_)
         super(Schedule, self).append(class_)
         for day in class_.schedule:
             for duration in class_.schedule[day]:
                 self.times += duration
-
-    def remove(self, class_):
-        try:
-            super(Schedule, self).remove(class_)
-        except ValueError:
-            raise ValueError("no such class: %s" % (class_, ))
 
     def table(self):
         self.times = list(set(self.times))
