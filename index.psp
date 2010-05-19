@@ -2,8 +2,8 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
 	<head>
 		<title>CRS-o-matic (using Python <%= ".".join(map(str, sys.version_info[:3])) %>)</title>
-		<meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
-		<link rel="stylesheet" type="text/css" href="main.css" />
+		<meta http-equiv="Content-Type" content="text/html;charset=utf-8"/>
+		<link rel="stylesheet" type="text/css" href="main.css"/>
 	</head>
 	<body>
 		<div id="wrap">
@@ -51,7 +51,7 @@ if form.has_key('searchkey') and form['searchkey']:
     classes = []
     total_units = 0
 %>
-<%= '<br />Desired classes:\n<ul>' %>
+<%= '<br/>Desired classes:\n<ul>' %>
 <%
     for s in search:
         s = s.split(':', 1)
@@ -76,14 +76,14 @@ if form.has_key('searchkey') and form['searchkey']:
 <%
         else:
 %>
-<%= '<li><del>%s</del> <em>(no such class)</em></li>' % (s, ) %>
+<%= '<li><del>%s</del> <em>(no such class)</em></li>' % (course_num, ) %>
 <%
     if classes:
         scheds = crs.get_schedules(*classes)
         p = 1
         for a in [len(a) for a in classes]: p *= a
 %>
-<%= "</ul>\nTotal number of units: <strong>%d.0</strong><br /><br />\nThere %s %d schedule%s without conflicts out of %d possible schedule%s:<br/>\n<br/>\n" % (total_units, 'is' if len(scheds) == 1 else 'are', len(scheds), '' if len(scheds) == 1 else 's', p, '' if p == 1 else 's') %>
+<%= "</ul>\nTotal number of units: <strong>%d.0</strong><br/><br/>\nThere %s %d schedule%s without conflicts out of %d possible schedule%s:<br/>\n<br/>\n" % (total_units, 'is' if len(scheds) == 1 else 'are', len(scheds), '' if len(scheds) == 1 else 's', p, '' if p == 1 else 's') %>
 <%
         s_ctr = 0
         for s in scheds:
@@ -137,7 +137,7 @@ if form.has_key('searchkey') and form['searchkey']:
 						</td>
 					</tr>
 				</table>
-				<br />
+				<br/>
 <%
 else:
     #
@@ -159,7 +159,7 @@ else:
 						Semester: <strong><%= SEM %></strong><br/>
 						<label for="searchkey">Desired subjects (newline-separated):</label><br/>
 						<textarea id="searchkey" name="searchkey" rows="10" cols="20"></textarea><br/>
-						<input type="submit" value="Submit" />
+						<input type="submit" value="Submit"/>
 					</fieldset>
 				</form>
 <%
@@ -167,10 +167,10 @@ else:
 %>
 				<p class="icon">
 					<a href="http://validator.w3.org/check?uri=referer">
-						<img src="http://www.w3.org/Icons/valid-xhtml10-blue" alt="Valid XHTML 1.0 Strict" height="31" width="88" />
+						<img src="http://www.w3.org/Icons/valid-xhtml10-blue" alt="Valid XHTML 1.0 Strict" height="31" width="88"/>
 					</a>
 					<a href="http://jigsaw.w3.org/css-validator/check/referer">
-						<img style="border:0;width:88px;height:31px" src="http://jigsaw.w3.org/css-validator/images/vcss-blue" alt="Valid CSS!" />
+						<img style="border:0;width:88px;height:31px" src="http://jigsaw.w3.org/css-validator/images/vcss-blue" alt="Valid CSS!"/>
 					</a>
 				</p>
 				<p class="copyright">
