@@ -251,7 +251,9 @@ class CRSParser(object):
 def search(course_num, filters=(), aysem=AYSEM):
     """Search using CRS"""
     url = '%s/%s/%s' % (URI, aysem, urllib.quote(course_num))
-    page = urllib2.urlopen(url)
+    request = urllib2.Request(url)
+    request.add_header('User-Agent', 'Python-urllib/CRS-o-matic')
+    page = urllib2.urlopen(request)
     data = page.read()
     page.close()
     parser = CRSParser(course_num, filters)
