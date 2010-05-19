@@ -155,7 +155,7 @@ class CRSParser(object):
                 continue
             kls = Class()
             # code
-            kls.code = code.text.encode('utf-8')
+            kls.code = code.string
             # name, section
             name = name.renderContents().strip().split('<br')[0]
             kls.name, kls.section = name.rsplit(' ', 1)
@@ -168,12 +168,13 @@ class CRSParser(object):
                 any(map(kls.section.startswith, self.blacklist)):
                 continue
             # credits
-            kls.credits = float(credits.text)
+            kls.credits = float(credits.string)
             # schedule
             schedule = schedule.renderContents().strip().split('<br')[0]
             kls.schedule = self._parse_sched(schedule)
             # stats
-            kls.stats = tuple([int(i.strip('/')) for i in stats.text.split() if i != '/'])
+            kls.stats = tuple([int(i.strip('/')) for i in stats.renderContents().\
+                replace('<strong>', '').replace('</strong>', '').split() if i != '/'])
             results.append(kls)
         return results
 
