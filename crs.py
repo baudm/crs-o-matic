@@ -20,7 +20,7 @@
 import time
 import urllib
 import urllib2
-from BeautifulSoup import BeautifulSoup
+from BeautifulSoup import BeautifulSoup, SoupStrainer
 from htmltable import HTMLTable
 # sets module is deprecated since Python 2.6
 try:
@@ -146,8 +146,9 @@ class CRSParser(object):
         
     def feed(self, data):
         results = []
-        soup = BeautifulSoup(data)
-        for tr in soup.find('table', id='tbl_schedule').find('tbody').findAll('tr'):
+        tbody = SoupStrainer('tbody')
+        soup = BeautifulSoup(data, parseOnlyThese=tbody)
+        for tr in soup.findAll('tr'):
             try:
                 code, name, credits, schedule, stats, remarks = tr.findAll('td')
             except ValueError:
