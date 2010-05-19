@@ -268,6 +268,18 @@ def get_schedules(*classes):
             map(sched.append, combination)
         except ScheduleConflict:
             continue
-        schedules.append(sched)
-
+        else:
+            schedules.append(sched)
     return schedules
+
+
+def get_schedules2(*classes):
+    """Generator version of get_schedules()"""
+    for combination in product(*classes):
+        sched = Schedule()
+        try:
+            map(sched.append, combination)
+        except ScheduleConflict:
+            continue
+        else:
+            yield sched
