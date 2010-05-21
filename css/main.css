@@ -39,7 +39,7 @@ table {
 
 
 #wrap {
-    background: #fff url('images/content.png') repeat-x top center;
+    background: #fff url('../images/content.png') repeat-x top center;
     margin: 0px auto;
     width: 96%;
     border: solid #e1e1e1;
@@ -63,7 +63,7 @@ table {
 
 
 .schedule th {
-    background: url('images/tableheader_bg.png') no-repeat center top;
+    background: url('../images/tableheader_bg.png') no-repeat center top;
     padding: 5px 10px;
     color: #467ba7;
     border: 1px solid #cbd6de;

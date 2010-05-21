@@ -3,7 +3,11 @@
 	<head>
 		<title>CRS-o-matic (using Python <%= ".".join(map(str, sys.version_info[:3])) %>)</title>
 		<meta http-equiv="Content-Type" content="text/html;charset=utf-8"/>
-		<link rel="stylesheet" type="text/css" href="main.css"/>
+		<link rel="stylesheet" type="text/css" href="css/main.css"/>
+        <link rel="stylesheet" type="text/css" href="css/jquery.paginate.css"/>
+		<script type="text/javascript" src="js/jquery-1.4.2.min.js"/>
+		<script type="text/javascript" src="js/jquery.paginate.js"/>
+		<script type="text/javascript" src="js/pagination.js"/>
 	</head>
 	<body>
 		<div id="wrap">
@@ -84,6 +88,7 @@ if form.has_key('searchkey') and form['searchkey']:
         for a in [len(a) for a in classes]: p *= a
 %>
 <%= "</ul>\nTotal number of units: <strong>%d.0</strong><br/><br/>\nThere %s %d schedule%s without conflicts out of %d possible schedule%s:<br/>\n<br/>\n" % (total_units, 'is' if len(scheds) == 1 else 'are', len(scheds), '' if len(scheds) == 1 else 's', p, '' if p == 1 else 's') %>
+        <div class="pagination"></div>
 <%
         s_ctr = 0
         for s in scheds:
@@ -123,7 +128,13 @@ if form.has_key('searchkey') and form['searchkey']:
             for i in range(ctr, ctr + 2):
                 table.set_cell_attrs(i, 0, {'class': 'highlight'})
                 table.set_cell_attrs(i, 1, {'class': 'highlight'})
-
+%>
+<%
+            if s_ctr % 10 == 1:
+                #
+%>
+                <div id="p<%= s_ctr/10 + 1 %>" class="page" style="display: none">
+<%
             # begin HTML
 %>
 				<h2><%= s_ctr %></h2>
@@ -138,6 +149,15 @@ if form.has_key('searchkey') and form['searchkey']:
 					</tr>
 				</table>
 				<br/>
+<%
+            if s_ctr % 10 == 0 or s_ctr == len(scheds):
+                #
+%>
+                </div>
+<%
+        #
+%>
+        <div class="pagination"></div>
 <%
 else:
     #
