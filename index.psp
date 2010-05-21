@@ -66,13 +66,13 @@ if form.has_key('searchkey') and form['searchkey']:
         if c:
             classes.append(c)
             if not c[0].name.startswith('CWTS') and not c[0].name.startswith('PE '):
-                total_units += c[0].credits
+                total_units += c[0].units
 %>
-<%= '<li>%s (%d.0)</li>' % (c[0].name, c[0].credits) %>
+<%= '<li>%s (%d.0)</li>' % (c[0].name, c[0].units) %>
 <%
             else:
 %>
-<%= '<li>%s <em>(%d.0)</em></li>' % (c[0].name, c[0].credits) %>
+<%= '<li>%s <em>(%d.0)</em></li>' % (c[0].name, c[0].units) %>
 <%
         else:
 %>

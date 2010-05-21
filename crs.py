@@ -54,8 +54,8 @@ AYSEM = '120101'
 URI = 'http://crs.upd.edu.ph/schedule'
 
 
-def strftime(format, t):
-    return time.strftime(format, (1900, 1, 1, t[0], t[1], 0, 0, 1, -1))
+def strftime(fmt, t):
+    return time.strftime(fmt, (1900, 1, 1, t[0], t[1], 0, 0, 1, -1))
 
 
 class ScheduleConflict(Exception):
@@ -74,7 +74,7 @@ class Class(object):
         self.code = None
         self.name = None
         self.section = None
-        self.credits = None
+        self.units = None
         self.schedule = None
         self.stats = None
 
@@ -150,7 +150,7 @@ class CRSParser(object):
         soup = BeautifulSoup(data, parseOnlyThese=tbody)
         for tr in soup.findAll('tr'):
             try:
-                code, name, credits, schedule, stats, remarks = tr.findAll('td')
+                code, name, units, schedule, stats, remarks = tr.findAll('td')
             except ValueError:
                 continue
             kls = Class()
@@ -167,8 +167,8 @@ class CRSParser(object):
             if (self.whitelist and not any(map(kls.section.startswith, self.whitelist))) or \
                 any(map(kls.section.startswith, self.blacklist)):
                 continue
-            # credits
-            kls.credits = float(credits.string)
+            # units
+            kls.units = float(units.string)
             # schedule
             schedule = schedule.renderContents().strip().split('<br')[0]
             kls.schedule = self._parse_sched(schedule)
@@ -187,9 +187,9 @@ class CRSParser(object):
             # Append 'M'.
             end = "".join([end, 'M'])
 
-        for format in ('%I%p', '%I:%M%p'):
+        for fmt in ('%I%p', '%I:%M%p'):
             try:
-                time_end = time.strptime(end, format)[3:5]
+                time_end = time.strptime(end, fmt)[3:5]
             except ValueError:
                 continue
             else:
@@ -205,9 +205,9 @@ class CRSParser(object):
             # Append the same am/pm to the start time.
             start = "".join([start, strftime("%P", time_end)])
 
-        for format in ('%I', '%I:%M', '%I%p', '%I:%M%p'):
+        for fmt in ('%I', '%I:%M', '%I%p', '%I:%M%p'):
             try:
-                time_start = time.strptime(start, format)[3:5]
+                time_start = time.strptime(start, fmt)[3:5]
             except ValueError:
                 continue
             else:
