@@ -187,7 +187,10 @@ class CRSParser(object):
         for kls in children:
             parent = filter(kls.section.startswith, parents.keys())[0]
             CRSParser._merge_sched(kls.schedule, parents[parent].schedule)
-        return children
+        if not children:
+            return parents.values()
+        else:
+            return children
 
     @staticmethod
     def _parse_time(start, end):
