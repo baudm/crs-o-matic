@@ -145,7 +145,8 @@ class CRSParser(object):
             self.blacklist = []
         
     def feed(self, data):
-        results = []
+        parents = {}
+        children = []
         tbody = SoupStrainer('tbody')
         soup = BeautifulSoup(data, parseOnlyThese=tbody)
         for tr in soup.findAll('tr'):
@@ -175,8 +176,18 @@ class CRSParser(object):
             # stats
             kls.stats = tuple([int(i.strip('/')) for i in stats.renderContents().\
                 replace('<strong>', '').replace('</strong>', '').split() if i != '/'])
-            results.append(kls)
-        return results
+            if ' lab ' in schedule:
+                children.append(kls)
+            else:
+                parents[kls.section] = kls
+        return self._merge_parent_child(parents, children)
+    
+    @staticmethod
+    def _merge_parent_child(parents, children):
+        for kls in children:
+            parent = filter(kls.section.startswith, parents.keys())[0]
+            CRSParser._merge_sched(kls.schedule, parents[parent].schedule)
+        return children
 
     @staticmethod
     def _parse_time(start, end):
