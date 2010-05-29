@@ -176,19 +176,24 @@ class CRSParser(object):
                 children.append(kls)
             else:
                 parents[kls.section] = kls
-        return self._filter_and_merge(parents, children)
+        return self._postprocess(parents, children)
+
+    def _filter(self, kls):
+        """Filter based on section preferences"""
+        return not any(map(kls.section.startswith, self.blacklist)) and \
+            (not self.whitelist or any(map(kls.section.startswith, self.whitelist)))
     
-    def _filter_and_merge(self, parents, children):
-        results = []
-        for kls in children:
-            # Filter based on section preferences
-            if (self.whitelist and not any(map(kls.section.startswith, self.whitelist))) or \
-                any(map(kls.section.startswith, self.blacklist)):
-                continue
-            parent = filter(kls.section.startswith, parents.keys())[0]
-            self._merge_sched(kls.schedule, parents[parent].schedule)
-            results.append(kls)
-        return results if children else parents.values()
+    def _postprocess(self, parents, children):
+        if children:
+            results = filter(self._filter, children)
+            # Merge schedules with the respective parent
+            if parents:
+                for kls in results:
+                    parent = filter(kls.section.startswith, parents.keys())[0]
+                    self._merge_sched(kls.schedule, parents[parent].schedule)
+        else:
+            results = filter(self._filter, parents.values())
+        return results
 
     @staticmethod
     def _parse_time(start, end):
