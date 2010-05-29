@@ -178,21 +178,21 @@ class CRSParser(object):
                 parents[kls.section] = kls
         return self._postprocess(parents, children)
 
-    def _filter(self, kls):
+    def _filter_class(self, kls):
         """Filter based on section preferences"""
         return not any(map(kls.section.startswith, self.blacklist)) and \
             (not self.whitelist or any(map(kls.section.startswith, self.whitelist)))
     
     def _postprocess(self, parents, children):
         if children:
-            results = filter(self._filter, children)
+            results = filter(self._filter_class, children)
             # Merge schedules with the respective parent
             if parents:
                 for kls in results:
                     parent = filter(kls.section.startswith, parents.keys())[0]
                     self._merge_sched(kls.schedule, parents[parent].schedule)
         else:
-            results = filter(self._filter, parents.values())
+            results = filter(self._filter_class, parents.values())
         return results
 
     @staticmethod
@@ -248,7 +248,10 @@ class CRSParser(object):
         sched = {}
         for idx in range(len(split)):
             if split[idx] in days:
-                start, end = split[idx + 1].split('-')
+                try:
+                    start, end = split[idx + 1].split('-')
+                except ValueError:
+                    continue
                 time = CRSParser._parse_time(start, end)
                 for day in CRSParser._parse_day(split[idx]):
                     if day in sched:
