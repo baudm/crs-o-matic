@@ -170,9 +170,12 @@ class CRSParser(object):
             schedule = schedule.renderContents().strip().split('<br')[0]
             kls.schedule = self._parse_sched(schedule)
             # stats
-            kls.stats = tuple([int(i.strip('/')) for i in stats.renderContents().\
-                replace('<strong>', '').replace('</strong>', '').split() if i != '/'])
-            if ' lab ' in schedule:
+            try:
+                kls.stats = tuple([int(i.strip('/')) for i in stats.renderContents().\
+                    replace('<strong>', '').replace('</strong>', '').split() if i != '/'])
+            except ValueError:
+                continue
+            if ' lab ' in schedule or  ' disc ' in schedule:
                 children.append(kls)
             else:
                 parents[kls.section] = kls
