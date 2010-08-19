@@ -192,7 +192,15 @@ class CRSParser(object):
             # Merge schedules with the respective parent
             if parents:
                 for kls in results:
-                    parent = filter(kls.section.startswith, parents.keys())[0]
+                    try:
+                        parent = filter(kls.section.startswith, parents.keys())[0]
+                    except IndexError:
+                        for i in reversed(range(1, len(kls.section))):
+                            for parent in parents:
+                                if kls.section[:i] in parent:
+                                    break
+                            if kls.section[:i] in parent:
+                                break
                     self._merge_sched(kls.schedule, parents[parent].schedule)
         else:
             results = filter(self._filter_class, parents.values())
