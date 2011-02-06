@@ -135,8 +135,9 @@ class Schedule(list):
 
 class CRSParser(object):
 
-    def __init__(self, course_num, filters=()):
+    def __init__(self, course_num, pe=None, filters=()):
         self.course_num = course_num.lower()
+        self.pe = pe
         if filters:
             self.whitelist = [i.upper() for i in filters if not i.startswith('!')]
             self.blacklist = [i.upper().lstrip('!') for i in filters if i.startswith('!')]
@@ -162,8 +163,12 @@ class CRSParser(object):
             kls.name, kls.section = name.rsplit(' ', 1)
             kls.name = ' '.join(kls.name.split())
             # Filter classes based on the course number
-            if kls.name.lower() != self.course_num:
-                continue
+            if self.pe is None:
+                if kls.name.lower() != self.course_num:
+                    continue
+            else:
+                if kls.name.lower() != self.course_num + ' ' + self.pe:
+                    continue
             # units
             kls.units = float(units.string)
             # schedule
@@ -284,13 +289,20 @@ class CRSParser(object):
 
 def search(course_num, filters=(), aysem=AYSEM):
     """Search using CRS"""
+    # Stupid code for PE classes
+    pe = None
+    c = course_num.lower().split()
+    if c[0] == 'pe':
+        course_num = ' '.join(c[:2])
+        if len(c) == 3 and not c[2].isdigit():
+            pe = c[2]
     url = '%s/%s/%s' % (URI, aysem, urllib.quote(course_num))
     request = urllib2.Request(url)
     request.add_header('User-Agent', 'Python-urllib/CRS-o-matic')
     page = urllib2.urlopen(request)
     data = page.read()
     page.close()
-    parser = CRSParser(course_num, filters)
+    parser = CRSParser(course_num, pe, filters)
     return parser.feed(data)
 
 
