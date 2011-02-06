@@ -50,7 +50,7 @@ except ImportError:
             return Cartesian(list(args))
 
 
-AYSEM = '120101'
+AYSEM = '120102'
 URI = 'http://crs.upd.edu.ph/schedule'
 
 
@@ -134,7 +134,7 @@ class Schedule(list):
 
 
 class CRSParser(object):
-    
+
     def __init__(self, course_num, filters=()):
         self.course_num = course_num.lower()
         if filters:
@@ -143,7 +143,7 @@ class CRSParser(object):
         else:
             self.whitelist = []
             self.blacklist = []
-        
+
     def feed(self, data):
         parents = {}
         children = []
@@ -185,7 +185,7 @@ class CRSParser(object):
         """Filter based on section preferences"""
         return not any(map(kls.section.startswith, self.blacklist)) and \
             (not self.whitelist or any(map(kls.section.startswith, self.whitelist)))
-    
+
     def _postprocess(self, parents, children):
         if children:
             results = filter(self._filter_class, children)
@@ -201,6 +201,8 @@ class CRSParser(object):
                                     break
                             if kls.section[:i] in parent:
                                 break
+                    # Choose the non-zero units
+                    kls.units = kls.units or parents[parent].units
                     self._merge_sched(kls.schedule, parents[parent].schedule)
         else:
             results = filter(self._filter_class, parents.values())
