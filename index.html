@@ -1,0 +1,117 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+	<head>
+		<title>CRS-o-matic</title>
+		<meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+		<link rel="stylesheet" type="text/css" href="css/main.css" />
+		<!--link rel="stylesheet" type="text/css" href="css/jquery.paginate.css" />
+		<script type="text/javascript" src="js/jquery-1.4.2.min.js"></script>
+		<script type="text/javascript" src="js/jquery.paginate.js"></script>
+		<script type="text/javascript" src="js/pagination.js"></script-->
+	</head>
+	<body>
+
+		<div id="wrap">
+			<div id="content">
+				<strong>CRS-o-matic</strong> - a CRS schedule generator and probability and statistics tool written in pure Python<br />
+				<br />
+				This project is hosted at <a href="http://code.google.com/p/crs-o-matic/">Google Code</a>. For bug reports, feature requests, patch submissions, and the like, submit a new issue <a href="http://code.google.com/p/crs-o-matic/issues/list">here</a>.<br />
+				<br />
+
+				<strong>Clarification of Terms:</strong>
+				<ul>
+					<li>probability - the chances of getting a particular subject; probability = 100% means a 'sure shot'.</li>
+					<li>mean - the mean of the probabilities of the subjects in a particular schedule.</li>
+					<li>standard deviation - the standard deviation of the probabilities of the subjects in a particular schedule.</li>
+				</ul>
+
+				<strong>NOTES:</strong>
+				<ul>
+					<li>You would want a schedule with a high probability mean and a low standard deviation.</li>
+					<li>The code is currently not _that_ clean and optimized and may eat a lot of resources.</li>
+					<li>Duplicate schedules (think of Math 17, 53, etc.) might be displayed. I'm still working on it.</li>
+				</ul>
+
+				<strong>TODO:</strong>
+				<ul>
+					<li>More optimizations</li>
+				</ul>
+
+				<strong>Disclaimer:</strong>
+				<p>All data presented by CRS-o-matic ('The Software') are just parsed from the <a href="http://crs.upd.edu.ph/schedule">CRS website</a> and are not modified in any way. As such, I will not be responsible for any misleading or erroneous information produced by the software due to errors in the CRS website. I will also not be responsible for any misleading or erroneous information caused by bugs in the software. If you want to know how the software works, feel free to <a href="http://code.google.com/p/crs-o-matic/source/checkout">checkout</a> the source code via Mercurial (Hg).</p>
+			{% if desired %}
+				<br />
+				Desired classes:
+				<ul>
+				{% for c in desired.reg %}
+					<li>{{ c.name }} ({{ c.units }})</li>
+				{% endfor %}
+				{% for c in desired.extra %}
+					<li>{{ c.name }} <em>({{ c.units }})</em></li>
+				{% endfor %}
+				{% for c in desired.none %}
+					<li><del>{{ c.name }}</del> <em>(no such class)</em></li>
+				{% endfor %}
+				</ul>
+
+				Total number of units: <strong>{{ desired.units }}</strong>
+				<br /><br />
+				There are {{ tables|length }} schedules without conflicts out of {{ p }} possible schedules:
+				<br /><br />
+
+				<!--div class="pagination"></div-->
+
+				{% for t in tables %}
+				<h2>{{ forloop.counter }}</h2>
+				<table class="parent-table">
+					<tr>
+						<td class="first">
+						{{ t.0.table }}
+						</td>
+						<td>
+						{{ t.1.return_html }}
+						</td>
+					</tr>
+				</table>
+				<br />
+				{% endfor %}
+
+				<!--div class="pagination"></div-->
+
+			{% else %}
+				<form id="form" method="post" action="">
+					<fieldset>
+						Basic Filtering:<br />
+						<strong>Geog 1</strong> - <em>all Geog 1 classes</em><br />
+						<strong>Geog 1: TH</strong> - <em>all Geog 1 TH* classes (TTh by convention)</em><br />
+						<strong>Geog 1: THQ</strong> - <em>all Geog 1 THQ* classes (includes THQ1, THQ2, and so on)</em><br />
+						<strong>Geog 1: THQ1</strong> - <em>THE Geog 1 THQ1 class</em><br />
+						<strong>Geog 1: !THQ</strong> - <em>all Geog 1 classes excluding THQ* classes</em><br />
+						<br />
+						Advanced Filtering:<br />
+						<strong>Geog 1: TH, WFW</strong> - <em>all Geog 1 TH* and WFW* classes</em><br />
+						<strong>Geog 1: TH, !THQ</strong> - <em>Geog 1 TH* classes excluding THQ* classes</em><br />
+						<strong>Geog 1: TH, !THQ, WFW1, !THY</strong> - <em>Geog 1 TH* and WFW1 classes excluding THQ* and THY* classes</em><br />
+						<br /><br />
+						Semester: <strong>{{ sem }}</strong><br />
+						<label for="searchkey">Desired subjects (case-insensitive, newline-separated):</label><br />
+						<textarea id="searchkey" name="searchkey" rows="10" cols="20"></textarea><br />
+						<input type="submit" value="Submit"/>
+					</fieldset>
+				</form>
+			{% endif %}
+				<p class="icon">
+					<a href="http://validator.w3.org/check?uri=referer">
+						<img src="http://www.w3.org/Icons/valid-xhtml10-blue" alt="Valid XHTML 1.0 Strict" height="31" width="88"/>
+					</a>
+					<a href="http://jigsaw.w3.org/css-validator/check/referer">
+						<img style="border:0;width:88px;height:31px" src="http://jigsaw.w3.org/css-validator/images/vcss-blue" alt="Valid CSS!"/>
+					</a>
+				</p>
+				<p class="copyright">
+					Copyright &copy; 2008-2011 <a href="http://www.darwin.uk.to/" title="Darwin M. Bautista">Darwin M. Bautista</a>
+				</p>
+			</div>
+		</div>
+	</body>
+</html>
