@@ -4,10 +4,10 @@
 		<title>CRS-o-matic</title>
 		<meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
 		<link rel="stylesheet" type="text/css" href="css/main.css" />
-		<!--link rel="stylesheet" type="text/css" href="css/jquery.paginate.css" />
+		<link rel="stylesheet" type="text/css" href="css/jquery.paginate.css" />
 		<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.5.0/jquery.min.js"></script>
 		<script type="text/javascript" src="js/jquery.paginate.js"></script>
-		<script type="text/javascript" src="js/pagination.js"></script-->
+		<script type="text/javascript" src="js/pagination.js"></script>
 	</head>
 	<body>
 
@@ -39,6 +39,7 @@
 
 				<strong>Disclaimer:</strong>
 				<p>All data presented by CRS-o-matic ('The Software') are just parsed from the <a href="http://crs.upd.edu.ph/schedule">CRS website</a> and are not modified in any way. As such, I will not be responsible for any misleading or erroneous information produced by the software due to errors in the CRS website. I will also not be responsible for any misleading or erroneous information caused by bugs in the software. If you want to know how the software works, feel free to <a href="http://code.google.com/p/crs-o-matic/source/checkout">checkout</a> the source code via Mercurial (Hg).</p>
+
 			{% if desired %}
 				<br />
 				Desired classes:
@@ -59,9 +60,14 @@
 				There are {{ tables|length }} schedules without conflicts out of {{ p }} possible schedules:
 				<br /><br />
 
-				<!--div class="pagination"></div-->
+				<div class="pagination"></div>
 
 				{% for t in tables %}
+
+					{% if forloop.counter|page_start %}
+						 <div id="p{{ forloop.counter|page_id }}" class="page" style="display: none">
+					{% endif %}
+
 				<h2>{{ forloop.counter }}</h2>
 				<table class="parent-table">
 					<tr>
@@ -74,9 +80,14 @@
 					</tr>
 				</table>
 				<br />
+
+					{% if forloop.counter|page_end:tables %}
+						</div>
+					{% endif %}
+
 				{% endfor %}
 
-				<!--div class="pagination"></div-->
+				<div class="pagination"></div>
 
 			{% else %}
 				<form id="form" method="post" action="">
