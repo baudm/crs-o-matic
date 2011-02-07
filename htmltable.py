@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-# $Id$
 #
 # htmltable - part of the CRS-o-matic project
 # Copyright (C) 2003  Joe Pasko
