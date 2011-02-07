@@ -287,22 +287,24 @@ class CRSParser(object):
         return days
 
     @staticmethod
-    def _parse_sched(string):
-        days = ('M', 'T', 'W', 'Th', 'F', 'S', 'TTh', 'WF', 'MTThF', 'TWThF', 'MTWThF')
-        split = string.split()
+    def _parse_sched(data):
+        data = data.split()
         sched = {}
-        for idx in range(len(split)):
-            if split[idx] in days:
-                try:
-                    start, end = split[idx + 1].split('-')
-                except ValueError:
-                    continue
-                time = CRSParser._parse_time(start, end)
-                for day in CRSParser._parse_day(split[idx]):
-                    if day in sched:
-                        sched[day].append(time)
-                    else:
-                        sched[day] = [time]
+        for i, block in enumerate(data[1:], 1):
+            if '-' not in block:
+                continue
+            # Assume that this is a valid time
+            try:
+                start, end = block.split('-')
+            except ValueError:
+                continue
+            time = CRSParser._parse_time(start, end)
+            # Assume that the previous block is valid days
+            for day in CRSParser._parse_day(data[i - 1]):
+                if day in sched:
+                    sched[day].append(time)
+                else:
+                    sched[day] = [time]
         return sched
 
     @staticmethod
