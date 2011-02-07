@@ -64,6 +64,9 @@ class ScheduleConflict(Exception):
 
 class Duration(tuple):
 
+    def __new__(cls, start, end):
+        return super(Duration, cls).__new__(cls, (start, end))
+
     def __repr__(self):
         return "<%s-%s>" % (strftime("%I:%M%P", self[0]), strftime("%I:%M%P", self[1]))
 
@@ -274,7 +277,7 @@ class CRSParser(object):
                 continue
             else:
                 break
-        return Duration((time_start, time_end))
+        return Duration(time_start, time_end)
 
     @staticmethod
     def _parse_day(combi):
