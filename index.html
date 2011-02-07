@@ -59,12 +59,12 @@
 
 					Total number of units: <strong>{{ desired.units }}</strong>
 					<br /><br />
-					There are {{ tables|length }} schedules without conflicts out of {{ desired.possible }} possible schedules:
+					There are {{ scheds|length }} schedules without conflicts out of {{ desired.possible }} possible schedules:
 					<br /><br />
 
 					<div class="pagination"></div>
 
-					{% for t in tables %}
+					{% for sched in scheds %}
 
 						{% if forloop.counter|page_start %}
 							 <div id="p{{ forloop.counter|page_id }}" class="page" style="display: none">
@@ -74,16 +74,16 @@
 					<table class="parent-table">
 						<tr>
 							<td class="first">
-							{{ t.0.table }}
+							{{ sched.get_table }}
 							</td>
 							<td>
-							{{ t.1.return_html }}
+							{{ sched.get_stats }}
 							</td>
 						</tr>
 					</table>
 					<br />
 
-						{% if forloop.counter|page_end:tables %}
+						{% if forloop.counter|page_end:scheds %}
 							</div>
 						{% endif %}
 

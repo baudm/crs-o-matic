@@ -17,6 +17,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import math
 import time
 import urllib
 import urllib2
@@ -106,16 +107,14 @@ class Schedule(list):
             for duration in class_.schedule[day]:
                 self.times += duration
 
-    def table(self):
+    def get_table(self):
         self.times = list(set(self.times))
         self.times.sort()
         table = HTMLTable(len(self.times), 7, {'class': 'schedule', 'cellpadding': 0, 'cellspacing': 0})
         day_map = {'M': 1, 'T': 2, 'W': 3, 'Th': 4, 'F': 5, 'S': 6}
-        ctr = 0
-        for header in ('Time', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'):
-            table.set_cell_type(0, ctr, 'th')
-            table.set_cell_data(0, ctr, header)
-            ctr += 1
+        for i, header in enumerate(('Time', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday')):
+            table.set_cell_type(0, i, 'th')
+            table.set_cell_data(0, i, header)
         table.set_cell_attrs(0, 0, {'class': 'time'})
         for idx in range(len(self.times) - 1):
             table.set_cell_data(idx+1, 0, "-".join([strftime("%I:%M%P", self.times[idx]), strftime("%I:%M%P", self.times[idx+1])]))
@@ -130,6 +129,37 @@ class Schedule(list):
                         table.set_cell_rowspan(s + 1, day_i, e - s)
                     table.set_cell_attrs(s + 1, day_i, {'class': 'highlight'})
                     table.set_cell_data(s + 1, day_i, class_.name)
+        return table.return_html()
+
+    def get_stats(self):
+        table = HTMLTable(len(self), 2, {'class': 'schedule', 'cellpadding': 0, 'cellspacing': 0})
+        table.set_cell_attrs(0, 1, {'class': 'probability'})
+        for i, header in enumerate(('Class', 'Prob.')):
+            table.set_cell_type(0, i, 'th')
+            table.set_cell_data(0, i, header)
+        prob_list = []
+        ctr = 1
+        for c in self:
+            try:
+                prob_class = float(c.stats[0]) / c.stats[2]
+            except ZeroDivisionError:
+                prob_class = 1.0
+            # Normalize
+            if prob_class > 1.0:
+                prob_class = 1.0
+            prob_list.append(prob_class)
+            table.set_cell_data(ctr, 0, " ".join([c.name, c.section]))
+            table.set_cell_data(ctr, 1, "%.2f%%" % (100 * prob_class, ))
+            ctr += 1
+        prob = sum(prob_list)/len(self)
+        stdev = math.sqrt(sum(map(lambda x: (x-prob)*(x-prob), prob_list))/len(self))
+        table.set_cell_data(ctr, 0, 'Mean')
+        table.set_cell_data(ctr, 1, "%.2f%%" % (100 * prob, ))
+        table.set_cell_data(ctr + 1, 0, 'Std. Dev.')
+        table.set_cell_data(ctr + 1, 1, "%.2f%%" % (100 * stdev, ))
+        for i in range(ctr, ctr + 2):
+            table.set_cell_attrs(i, 0, {'class': 'highlight'})
+            table.set_cell_attrs(i, 1, {'class': 'highlight'})
         return table.return_html()
 
 

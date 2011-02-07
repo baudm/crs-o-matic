@@ -1,5 +1,4 @@
 import cgi
-import math
 import os.path
 import operator
 
@@ -9,7 +8,6 @@ from google.appengine.ext.webapp.util import run_wsgi_app
 template.register_template_library('filters')
 
 import crs
-from htmltable import HTMLTable
 
 
 SEM = 'Second Semester AY 2010-2011'
@@ -54,49 +52,6 @@ class MainPage(webapp.RequestHandler):
             desired['possible'] = reduce(operator.mul, [len(c) for c in classes])
         return desired, classes
 
-    @staticmethod
-    def _gen_tables(classes):
-        scheds = crs.get_schedules(*classes)
-        tables = []
-        for s in scheds:
-            table = HTMLTable(len(s), 2, {'class': 'schedule', 'cellpadding': 0, 'cellspacing': 0})
-            ctr = 0
-            table.set_cell_attrs(0, 1, {'class': 'probability'})
-            for header in ('Class', 'Prob.'):
-                table.set_cell_type(0, ctr, 'th')
-                table.set_cell_data(0, ctr, header)
-                ctr += 1
-
-            ctr = 1
-            prob_list = []
-            for c in s:
-                try:
-                    prob_class = float(c.stats[0]) / c.stats[2]
-                except ZeroDivisionError:
-                    prob_class = 1.0
-
-                if prob_class > 1.0:
-                    prob_class = 1.0
-
-                prob_list.append(prob_class)
-
-                table.set_cell_data(ctr, 0, " ".join([c.name, c.section]))
-                table.set_cell_data(ctr, 1, "%.2f%%" % (100 * prob_class, ))
-                ctr += 1
-
-            prob = sum(prob_list)/len(classes)
-            stdev = math.sqrt(sum(map(lambda x: (x-prob)*(x-prob), prob_list))/len(classes))
-
-            table.set_cell_data(ctr, 0, 'Mean')
-            table.set_cell_data(ctr, 1, "%.2f%%" % (100 * prob, ))
-            table.set_cell_data(ctr + 1, 0, 'Std. Dev.')
-            table.set_cell_data(ctr + 1, 1, "%.2f%%" % (100 * stdev, ))
-            for i in range(ctr, ctr + 2):
-                table.set_cell_attrs(i, 0, {'class': 'highlight'})
-                table.set_cell_attrs(i, 1, {'class': 'highlight'})
-            tables.append((s, table))
-        return tables
-
     def _render(self, data):
         path = os.path.join(os.path.dirname(__file__), 'index.html')
         self.response.out.write(template.render(path, data))
@@ -113,11 +68,11 @@ class MainPage(webapp.RequestHandler):
         # Sort search queries to have the same output each and every time (for the same input).
         terms.sort()
         desired, classes = self._search(terms)
-        tables = self._gen_tables(classes) if classes else None
+        scheds = crs.get_schedules(*classes) if classes else None
 
         data = {
             'desired': desired,
-            'tables': tables,
+            'scheds': scheds,
             'sem': SEM
         }
         self._render(data)
