@@ -59,7 +59,7 @@
 
 					Total number of units: <strong>{{ desired.units }}</strong>
 					<br /><br />
-					There are {{ scheds|length }} schedules without conflicts out of {{ desired.possible }} possible schedules:
+					There {{ scheds|pluralize:"is,are" }} {{ scheds|length }} schedule{{ scheds|pluralize }} without conflicts out of {{ desired.possible }} possible schedule{{ desired.possible|pluralize }}:
 					<br /><br />
 
 					<div class="pagination"></div>
