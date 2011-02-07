@@ -57,13 +57,12 @@ class MainPage(webapp.RequestHandler):
             if c:
                 classes.append(c)
                 if not c[0].name.startswith('CWTS') and not c[0].name.startswith('PE '):
-                    desired['units'] += c[0].units
+                    desired['units'] += c[0].credit
                     desired['reg'].append(c[0])
                 else:
                     desired['extra'].append(c[0])
             else:
-                c = crs.Class()
-                c.name = course_num
+                c = crs.Class(name=course_num)
                 desired['none'].append(c)
         if classes:
             desired['matches'] = len(classes)

@@ -70,11 +70,11 @@ class Duration(tuple):
 
 class Class(object):
 
-    def __init__(self):
-        self.code = None
-        self.name = None
-        self.section = None
-        self.units = None
+    def __init__(self, code=None, name=None, section=None):
+        self.code = code
+        self.name = name
+        self.section = section
+        self.credit = None
         self.schedule = None
         self.stats = None
 
@@ -181,12 +181,10 @@ class CRSParser(object):
         soup = BeautifulSoup(data, parseOnlyThese=tbody)
         for tr in soup.findAll('tr'):
             try:
-                code, name, units, schedule, stats, remarks = tr.findAll('td')
+                code, name, credit, schedule, stats, remarks = tr.findAll('td')
             except ValueError:
                 continue
-            kls = Class()
-            # code
-            kls.code = code.string
+            kls = Class(code=code.string)
             # name, section
             name = name.renderContents().strip().split('<br')[0]
             kls.name, kls.section = name.rsplit(' ', 1)
@@ -198,8 +196,8 @@ class CRSParser(object):
             else:
                 if kls.name.lower() != self.course_num + ' ' + self.pe:
                     continue
-            # units
-            kls.units = float(units.string)
+            # credit
+            kls.credit = float(credit.string)
             # schedule
             schedule = schedule.renderContents().strip().split('<br')[0]
             kls.schedule = self._parse_sched(schedule)
@@ -235,8 +233,8 @@ class CRSParser(object):
                                     break
                             if kls.section[:i] in parent:
                                 break
-                    # Choose the non-zero units
-                    kls.units = kls.units or parents[parent].units
+                    # Choose the non-zero credit
+                    kls.credit = kls.credit or parents[parent].credit
                     self._merge_sched(kls.schedule, parents[parent].schedule)
         else:
             results = filter(self._filter_class, parents.values())

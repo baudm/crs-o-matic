@@ -45,10 +45,10 @@
 				Desired classes:
 				<ul>
 				{% for c in desired.reg %}
-					<li>{{ c.name }} ({{ c.units }})</li>
+					<li>{{ c.name }} ({{ c.credit }})</li>
 				{% endfor %}
 				{% for c in desired.extra %}
-					<li>{{ c.name }} <em>({{ c.units }})</em></li>
+					<li>{{ c.name }} <em>({{ c.credit }})</em></li>
 				{% endfor %}
 				{% for c in desired.none %}
 					<li><del>{{ c.name }}</del> <em>(no such class)</em></li>
