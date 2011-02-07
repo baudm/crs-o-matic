@@ -55,39 +55,43 @@
 				{% endfor %}
 				</ul>
 
-				Total number of units: <strong>{{ desired.units }}</strong>
-				<br /><br />
-				There are {{ tables|length }} schedules without conflicts out of {{ p }} possible schedules:
-				<br /><br />
+				{% if desired.matches %}
 
-				<div class="pagination"></div>
+					Total number of units: <strong>{{ desired.units }}</strong>
+					<br /><br />
+					There are {{ tables|length }} schedules without conflicts out of {{ desired.possible }} possible schedules:
+					<br /><br />
 
-				{% for t in tables %}
+					<div class="pagination"></div>
 
-					{% if forloop.counter|page_start %}
-						 <div id="p{{ forloop.counter|page_id }}" class="page" style="display: none">
-					{% endif %}
+					{% for t in tables %}
 
-				<h2>{{ forloop.counter }}</h2>
-				<table class="parent-table">
-					<tr>
-						<td class="first">
-						{{ t.0.table }}
-						</td>
-						<td>
-						{{ t.1.return_html }}
-						</td>
-					</tr>
-				</table>
-				<br />
+						{% if forloop.counter|page_start %}
+							 <div id="p{{ forloop.counter|page_id }}" class="page" style="display: none">
+						{% endif %}
 
-					{% if forloop.counter|page_end:tables %}
-						</div>
-					{% endif %}
+					<h2>{{ forloop.counter }}</h2>
+					<table class="parent-table">
+						<tr>
+							<td class="first">
+							{{ t.0.table }}
+							</td>
+							<td>
+							{{ t.1.return_html }}
+							</td>
+						</tr>
+					</table>
+					<br />
 
-				{% endfor %}
+						{% if forloop.counter|page_end:tables %}
+							</div>
+						{% endif %}
 
-				<div class="pagination"></div>
+					{% endfor %}
+
+					<div class="pagination"></div>
+
+				{% endif %}
 
 			{% else %}
 				<form id="form" method="post" action="">

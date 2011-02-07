@@ -23,7 +23,9 @@ class MainPage(webapp.RequestHandler):
             'reg': [],
             'extra': [],
             'none': [],
-            'units': 0
+            'units': 0,
+            'matches': 0,
+            'possible': 0
         }
         classes = []
         for s in queries:
@@ -47,6 +49,9 @@ class MainPage(webapp.RequestHandler):
                 c = crs.Class()
                 c.name = course_num
                 desired['none'].append(c)
+        if classes:
+            desired['matches'] = len(classes)
+            desired['possible'] = reduce(operator.mul, [len(c) for c in classes])
         return desired, classes
 
     @staticmethod
@@ -108,17 +113,10 @@ class MainPage(webapp.RequestHandler):
         # Sort search queries to have the same output each and every time (for the same input).
         terms.sort()
         desired, classes = self._search(terms)
-
-        if classes:
-            p = reduce(operator.mul, [len(a) for a in classes])
-            tables = self._gen_tables(classes)
-        else:
-            p = 0
-            tables = None
+        tables = self._gen_tables(classes) if classes else None
 
         data = {
             'desired': desired,
-            'p': p,
             'tables': tables,
             'sem': SEM
         }
