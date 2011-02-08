@@ -47,21 +47,26 @@ AYSEM = '120102'
 URI = 'http://crs.upd.edu.ph/schedule'
 
 
-def strftime(fmt, t):
+def _strftime(fmt, t):
     return time.strftime(fmt, (1900, 1, 1, t[0], t[1], 0, 0, 1, -1))
 
 
-class ScheduleConflict(Exception):
-    pass
+class Time(tuple):
 
-
-class Duration(tuple):
-
-    def __new__(cls, start, end):
-        return super(Duration, cls).__new__(cls, (start, end))
+    def __new__(cls, hour, minute):
+        return super(Time, cls).__new__(cls, (hour, minute))
 
     def __repr__(self):
-        return "<%s-%s>" % (strftime("%I:%M%P", self[0]), strftime("%I:%M%P", self[1]))
+        return _strftime('%I:%M%P', self)
+
+
+class Interval(tuple):
+
+    def __new__(cls, start, end):
+        return super(Interval, cls).__new__(cls, (start, end))
+
+    def __repr__(self):
+        return '<%s-%s>' % self
 
 
 class Class(object):
@@ -76,6 +81,10 @@ class Class(object):
 
     def __repr__(self):
         return "<%s %s>" % (self.name, self.section)
+
+
+class ScheduleConflict(Exception):
+    pass
 
 
 class Schedule(list):
@@ -112,7 +121,7 @@ class Schedule(list):
             table.set_cell_data(0, i, header)
         table.set_cell_attrs(0, 0, {'class': 'time'})
         for idx in range(len(self.times) - 1):
-            table.set_cell_data(idx+1, 0, "-".join([strftime("%I:%M%P", self.times[idx]), strftime("%I:%M%P", self.times[idx+1])]))
+            table.set_cell_data(idx+1, 0, "-".join([_strftime("%I:%M%P", self.times[idx]), _strftime("%I:%M%P", self.times[idx+1])]))
         for class_ in self:
             for day in class_.schedule:
                 day_i = day_map[day]
@@ -158,7 +167,7 @@ class Schedule(list):
         return table.return_html()
 
 
-class CRSParser(object):
+class ClassParser(object):
 
     def __init__(self, course_num, pe=None, filters=()):
         self.course_num = course_num.lower()
@@ -237,48 +246,47 @@ class CRSParser(object):
         return results
 
     @staticmethod
-    def _parse_time(start, end):
-        start = start.upper()
-        end = end.upper()
+    def _parse_time(data):
+        start, end = data.upper().split('-')
 
         if not end.endswith('M'):
             # Append 'M'.
             end = "".join([end, 'M'])
 
-        for fmt in ('%I%p', '%I:%M%p'):
+        for fmt in ['%I%p', '%I:%M%p']:
             try:
-                time_end = time.strptime(end, fmt)[3:5]
+                time_end = Time(*time.strptime(end, fmt)[3:5])
             except ValueError:
                 continue
             else:
                 break
         # Get the int value of the hours.
         start_hour = int(start.split(':')[0].rstrip('APM'))
-        end_hour = int(strftime('%I', time_end))
+        end_hour = int(_strftime('%I', time_end))
 
         if start.endswith('A') or start.endswith('P'):
             # Append 'M'.
             start = "".join([start, 'M'])
         elif start_hour <= end_hour and end_hour != 12:
             # Append the same am/pm to the start time.
-            start = "".join([start, strftime("%P", time_end)])
+            start = "".join([start, _strftime("%P", time_end)])
 
-        for fmt in ('%I', '%I:%M', '%I%p', '%I:%M%p'):
+        for fmt in ['%I', '%I:%M', '%I%p', '%I:%M%p']:
             try:
-                time_start = time.strptime(start, fmt)[3:5]
+                time_start = Time(*time.strptime(start, fmt)[3:5])
             except ValueError:
                 continue
             else:
                 break
-        return Duration(time_start, time_end)
+        return Interval(time_start, time_end)
 
     @staticmethod
-    def _parse_day(combi):
+    def _parse_days(data):
         # Replace 'Th' by 'th' to avoid confusion with 'T'.
-        combi = combi.replace('Th', 'th')
+        data = data.replace('Th', 'th')
         days = []
-        for day in ('M', 'T', 'W', 'th', 'F', 'S'):
-            if day in combi:
+        for day in ['M', 'T', 'W', 'th', 'F', 'S']:
+            if day in data:
                 days.append(day.title())
         return days
 
@@ -291,12 +299,11 @@ class CRSParser(object):
                 continue
             # Assume that this is a valid time
             try:
-                start, end = block.split('-')
+                time = ClassParser._parse_time(block)
             except ValueError:
                 continue
-            time = CRSParser._parse_time(start, end)
             # Assume that the previous block is valid days
-            for day in CRSParser._parse_day(data[i - 1]):
+            for day in ClassParser._parse_days(data[i - 1]):
                 if day in sched:
                     sched[day].append(time)
                 else:
@@ -327,7 +334,7 @@ def search(course_num, filters=(), aysem=AYSEM):
     page = urllib2.urlopen(request)
     data = page.read()
     page.close()
-    parser = CRSParser(course_num, pe, filters)
+    parser = ClassParser(course_num, pe, filters)
     return parser.feed(data)
 
 
