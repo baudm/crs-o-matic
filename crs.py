@@ -294,7 +294,7 @@ class ClassParser(object):
     def _parse_sched(data):
         data = data.split()
         sched = {}
-        for i, block in enumerate(data[1:], 1):
+        for i, block in enumerate(data[1:]):
             if '-' not in block:
                 continue
             # Assume that this is a valid time
@@ -303,7 +303,7 @@ class ClassParser(object):
             except ValueError:
                 continue
             # Assume that the previous block is valid days
-            for day in ClassParser._parse_days(data[i - 1]):
+            for day in ClassParser._parse_days(data[i]):
                 if day in sched:
                     sched[day].append(time)
                 else:
