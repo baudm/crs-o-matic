@@ -189,10 +189,10 @@ class ClassParser(object):
                 code, name, credit, schedule, stats, remarks = tr.findAll('td')
             except ValueError:
                 continue
-            kls = Class(code=code.string)
+            kls = Class(code=code.string.strip())
             # name, section
-            name = name.renderContents().strip().split('<br')[0]
-            kls.name, kls.section = name.rsplit(' ', 1)
+            kls.name, kls.section = name.string.rsplit(None, 1)
+            # Remove extra spaces, if any
             kls.name = ' '.join(kls.name.split())
             # Filter classes based on the course number
             if self.pe is None:
@@ -202,15 +202,15 @@ class ClassParser(object):
                 if kls.name.lower() != self.course_num + ' ' + self.pe:
                     continue
             # credit
-            kls.credit = float(credit.string)
+            kls.credit = float(credit.string.strip())
             # schedule
-            schedule = schedule.renderContents().strip().split('<br')[0]
+            schedule = schedule.contents[0].strip()
             kls.schedule = self._parse_sched(schedule)
             # stats
             try:
-                kls.stats = tuple([int(i.strip('/')) for i in stats.renderContents().\
-                    replace('<strong>', '').replace('</strong>', '').split() if i != '/'])
+                kls.stats = tuple([int(i.strip('/')) for i in stats.text.split() if i != '/'])
             except ValueError:
+                # get rid of DISSOLVED classes
                 continue
             if ' lab ' in schedule or  ' disc ' in schedule:
                 children.append(kls)
