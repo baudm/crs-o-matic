@@ -20,6 +20,7 @@ import math
 import time
 import urllib
 import urllib2
+
 from BeautifulSoup import BeautifulSoup, SoupStrainer
 from htmltable import HTMLTable
 # sets module is deprecated since Python 2.6
@@ -51,6 +52,21 @@ def _strftime(fmt, t):
     return time.strftime(fmt, (1900, 1, 1, t[0], t[1], 0, 0, 1, -1))
 
 
+def _merge_similar(classes):
+    i = 0
+    while i < len(classes) - 1:
+        j = i + 1
+        while j < len(classes):
+            if classes[i].schedule == classes[j].schedule:
+                # Add to similar classes
+                classes[i].similar.append(classes[j])
+                # Remove from list
+                classes.remove(classes[j])
+            else:
+                j += 1
+        i += 1
+
+
 class Time(tuple):
 
     def __new__(cls, hour, minute):
@@ -78,6 +94,7 @@ class Class(object):
         self.credit = None
         self.schedule = None
         self.stats = None
+        self.similar = []
 
     def __repr__(self):
         return "<%s %s>" % (self.name, self.section)
@@ -108,8 +125,8 @@ class Schedule(list):
         self._check_conflicts(class_)
         super(Schedule, self).append(class_)
         for day in class_.schedule:
-            for duration in class_.schedule[day]:
-                self.times += duration
+            for interval in class_.schedule[day]:
+                self.times += interval
 
     def get_table(self):
         self.times = list(set(self.times))
@@ -121,12 +138,12 @@ class Schedule(list):
             table.set_cell_data(0, i, header)
         table.set_cell_attrs(0, 0, {'class': 'time'})
         for idx in range(len(self.times) - 1):
-            table.set_cell_data(idx+1, 0, "-".join([_strftime("%I:%M%P", self.times[idx]), _strftime("%I:%M%P", self.times[idx+1])]))
+            table.set_cell_data(idx + 1, 0, '-'.join([str(self.times[idx]), str(self.times[idx + 1])]))
         for class_ in self:
             for day in class_.schedule:
                 day_i = day_map[day]
-                for duration in class_.schedule[day]:
-                    start, end = duration
+                for interval in class_.schedule[day]:
+                    start, end = interval
                     s = self.times.index(start)
                     e = self.times.index(end)
                     if (e - s) != 1:
@@ -134,6 +151,17 @@ class Schedule(list):
                     table.set_cell_attrs(s + 1, day_i, {'class': 'highlight'})
                     table.set_cell_data(s + 1, day_i, class_.name)
         return table.return_html()
+
+    @staticmethod
+    def _get_prob(stats):
+        try:
+            prob = float(stats[0]) / stats[2]
+        except ZeroDivisionError:
+            prob = 1.0
+        # Normalize
+        if prob > 1.0:
+            prob = 1.0
+        return prob
 
     def get_stats(self):
         table = HTMLTable(len(self), 2, {'class': 'schedule', 'cellpadding': 0, 'cellspacing': 0})
@@ -144,15 +172,18 @@ class Schedule(list):
         prob_list = []
         ctr = 1
         for c in self:
-            try:
-                prob_class = float(c.stats[0]) / c.stats[2]
-            except ZeroDivisionError:
-                prob_class = 1.0
-            # Normalize
-            if prob_class > 1.0:
-                prob_class = 1.0
+            probs = [self._get_prob(c.stats)]
+            data = " ".join([c.name, c.section])
+            if c.similar:
+                sections = []
+                for s in c.similar:
+                    sections.append(s.section)
+                data += '/ ' + '/ '.join(sections)
+                probs.append(self._get_prob(s.stats))
+            # Get average, for now
+            prob_class = sum(probs)/len(probs)
             prob_list.append(prob_class)
-            table.set_cell_data(ctr, 0, " ".join([c.name, c.section]))
+            table.set_cell_data(ctr, 0, data)
             table.set_cell_data(ctr, 1, "%.2f%%" % (100 * prob_class, ))
             ctr += 1
         prob = sum(prob_list)/len(self)
@@ -319,7 +350,7 @@ class ClassParser(object):
                 dest[day] = source[day]
 
 
-def search(course_num, filters=(), aysem=AYSEM):
+def search(course_num, filters=(), distinct=False, aysem=AYSEM):
     """Search using CRS"""
     # Stupid code for PE classes
     pe = None
@@ -335,7 +366,10 @@ def search(course_num, filters=(), aysem=AYSEM):
     data = page.read()
     page.close()
     parser = ClassParser(course_num, pe, filters)
-    return parser.feed(data)
+    classes = parser.feed(data)
+    if distinct:
+        _merge_similar(classes)
+    return classes
 
 
 def get_schedules(*classes):

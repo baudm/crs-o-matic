@@ -53,7 +53,7 @@ class MainPage(webapp.RequestHandler):
                 course_num = s[0]
                 filters = []
             course_num = ' '.join(course_num.split())
-            c = crs.search(course_num, filters)
+            c = crs.search(course_num, filters, True)
             if c:
                 classes.append(c)
                 if not c[0].name.startswith('CWTS') and not c[0].name.startswith('PE '):
