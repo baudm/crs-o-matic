@@ -38,9 +38,9 @@ class NxNArray(object):
         self._fill = fill
         row = []
         col = []
-        for i in range(cols):
+        for i in xrange(cols):
             row.append(self._fill)
-        for i in range(rows):
+        for i in xrange(rows):
             col.append(copy(row))
         self._array = col
 
@@ -65,13 +65,13 @@ class NxNArray(object):
         return self._fill
 
     def add_col(self):
-        for i in range(self._rows):
+        for i in xrange(self._rows):
             self._array[i].append(self._fill)
         self._cols += 1
 
     def add_row(self):
         row = []
-        for i in range(self._cols):
+        for i in xrange(self._cols):
             row.append(self._fill)
         self._array.append(row)
         self._rows += 1
@@ -83,9 +83,9 @@ class NxNArray(object):
             return
 
     def set_cell(self, row, col, data):
-        for i in range(row - self._rows + 1):
+        for i in xrange(row - self._rows + 1):
             self.add_row()
-        for i in range(col - self._cols + 1):
+        for i in xrange(col - self._cols + 1):
             self.add_col()
         self._array[row][col] = data
 

@@ -44,8 +44,8 @@ except ImportError:
             yield tuple(prod)
 
 
-AYSEM = '120102'
-URI = 'http://crs.upd.edu.ph/schedule'
+AYSEM = "120102"
+URI = "http://crs.upd.edu.ph/schedule"
 
 
 def _strftime(fmt, t):
@@ -73,7 +73,7 @@ class Time(tuple):
         return super(Time, cls).__new__(cls, (hour, minute))
 
     def __repr__(self):
-        return _strftime('%I:%M%P', self)
+        return _strftime("%I:%M%P", self)
 
 
 class Interval(tuple):
@@ -82,7 +82,7 @@ class Interval(tuple):
         return super(Interval, cls).__new__(cls, (start, end))
 
     def __repr__(self):
-        return '<%s-%s>' % self
+        return "<%s-%s>" % self
 
 
 class Class(object):
@@ -96,9 +96,6 @@ class Class(object):
         self.stats = None
         self.similar = []
 
-    def __repr__(self):
-        return "<%s %s>" % (self.name, self.section)
-
 
 class ScheduleConflict(Exception):
     pass
@@ -106,10 +103,7 @@ class ScheduleConflict(Exception):
 
 class Schedule(list):
 
-    def __init__(self):
-        self.times = []
-
-    def _check_conflicts(self, class_):
+    def append(self, class_):
         for c in self:
             for day in c.schedule:
                 if not day in class_.schedule:
@@ -120,32 +114,30 @@ class Schedule(list):
                            (dur_new[0] >= dur[0] and dur_new[1] <= dur[1]) or \
                            dur[0] < dur_new[0] < dur[1] or dur[0] < dur_new[1] < dur[1]:
                             raise ScheduleConflict("%s conflicts with %s" % (class_, c))
-
-    def append(self, class_):
-        self._check_conflicts(class_)
         super(Schedule, self).append(class_)
-        for day in class_.schedule:
-            for interval in class_.schedule[day]:
-                self.times += interval
 
     def get_table(self):
-        self.times = list(set(self.times))
-        self.times.sort()
-        table = HTMLTable(len(self.times), 7, {'class': 'schedule', 'cellpadding': 0, 'cellspacing': 0})
+        times = []
+        for class_ in self:
+            for i in class_.schedule.values():
+                map(times.extend, i)
+        times = list(set(times))
+        times.sort()
+        table = HTMLTable(len(times), 7, {'class': 'schedule', 'cellpadding': 0, 'cellspacing': 0})
         day_map = {'M': 1, 'T': 2, 'W': 3, 'Th': 4, 'F': 5, 'S': 6}
         for i, header in enumerate(('Time', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday')):
             table.set_cell_type(0, i, 'th')
             table.set_cell_data(0, i, header)
         table.set_cell_attrs(0, 0, {'class': 'time'})
-        for idx in range(len(self.times) - 1):
-            table.set_cell_data(idx + 1, 0, '-'.join([str(self.times[idx]), str(self.times[idx + 1])]))
+        for idx in xrange(len(times) - 1):
+            table.set_cell_data(idx + 1, 0, "%s-%s" % (str(times[idx]), str(times[idx + 1])))
         for class_ in self:
             for day in class_.schedule:
                 day_i = day_map[day]
                 for interval in class_.schedule[day]:
                     start, end = interval
-                    s = self.times.index(start)
-                    e = self.times.index(end)
+                    s = times.index(start)
+                    e = times.index(end)
                     if (e - s) != 1:
                         table.set_cell_rowspan(s + 1, day_i, e - s)
                     table.set_cell_attrs(s + 1, day_i, {'class': 'highlight'})
@@ -166,19 +158,19 @@ class Schedule(list):
     def get_stats(self):
         table = HTMLTable(len(self), 2, {'class': 'schedule', 'cellpadding': 0, 'cellspacing': 0})
         table.set_cell_attrs(0, 1, {'class': 'probability'})
-        for i, header in enumerate(('Class', 'Prob.')):
+        for i, header in enumerate(['Class', 'Prob.']):
             table.set_cell_type(0, i, 'th')
             table.set_cell_data(0, i, header)
         prob_list = []
         ctr = 1
         for c in self:
             probs = [self._get_prob(c.stats)]
-            data = " ".join([c.name, c.section])
+            data = "%s %s" % (c.name, c.section)
             if c.similar:
                 sections = []
                 for s in c.similar:
                     sections.append(s.section)
-                data += '/ ' + '/ '.join(sections)
+                data = "%s/ %s" % (data, '/ '.join(sections))
                 probs.append(self._get_prob(s.stats))
             # Get average, for now
             prob_class = sum(probs)/len(probs)
@@ -192,7 +184,7 @@ class Schedule(list):
         table.set_cell_data(ctr, 1, "%.2f%%" % (100 * prob, ))
         table.set_cell_data(ctr + 1, 0, 'Std. Dev.')
         table.set_cell_data(ctr + 1, 1, "%.2f%%" % (100 * stdev, ))
-        for i in range(ctr, ctr + 2):
+        for i in xrange(ctr, ctr + 2):
             table.set_cell_attrs(i, 0, {'class': 'highlight'})
             table.set_cell_attrs(i, 1, {'class': 'highlight'})
         return table.return_html()
@@ -263,7 +255,7 @@ class ClassParser(object):
                     try:
                         parent = filter(kls.section.startswith, parents.keys())[0]
                     except IndexError:
-                        for i in reversed(range(1, len(kls.section))):
+                        for i in reversed(xrange(1, len(kls.section))):
                             for parent in parents:
                                 if kls.section[:i] in parent:
                                     break
@@ -315,10 +307,8 @@ class ClassParser(object):
     def _parse_days(data):
         # Replace 'Th' by 'th' to avoid confusion with 'T'.
         data = data.replace('Th', 'th')
-        days = []
-        for day in ['M', 'T', 'W', 'th', 'F', 'S']:
-            if day in data:
-                days.append(day.title())
+        all_days = ['M', 'T', 'W', 'th', 'F', 'S']
+        days = (day.title() for day in all_days if day in data)
         return days
 
     @staticmethod
@@ -335,10 +325,7 @@ class ClassParser(object):
                 continue
             # Assume that the previous block is valid days
             for day in ClassParser._parse_days(data[i]):
-                if day in sched:
-                    sched[day].append(time)
-                else:
-                    sched[day] = [time]
+                sched.setdefault(day, []).append(time)
         return sched
 
     @staticmethod
