@@ -125,11 +125,11 @@ class Schedule(list):
         times = list(set(times))
         times.sort()
         table = Table(7, len(times), {'class': 'schedule', 'cellpadding': 0, 'cellspacing': 0})
-        day_map = {'M': 1, 'T': 2, 'W': 3, 'Th': 4, 'F': 5, 'S': 6}
         table.set_header_row(('Time', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'))
         table.set_cell_attrs(0, 0, {'class': 'time'})
         for idx in xrange(len(times) - 1):
             table.set_cell(0, idx + 1, "%s-%s" % (str(times[idx]), str(times[idx + 1])))
+        day_map = {'M': 1, 'T': 2, 'W': 3, 'Th': 4, 'F': 5, 'S': 6}
         for class_ in self:
             for day in class_.schedule:
                 day_i = day_map[day]
@@ -164,10 +164,9 @@ class Schedule(list):
             probs = [self._get_prob(c.stats)]
             data = "%s %s" % (c.name, c.section)
             if c.similar:
-                sections = []
-                for s in c.similar:
-                    sections.append(s.section)
-                data = "%s/ %s" % (data, '/ '.join(sections))
+                sections = [data]
+                sections.extend([s.section for s in c.similar])
+                data = "/ ".join(sections)
                 probs.append(self._get_prob(s.stats))
             # Get average, for now
             prob_class = sum(probs)/len(probs)
@@ -326,10 +325,7 @@ class ClassParser(object):
     @staticmethod
     def _merge_sched(dest, source):
         for day in source:
-            if day in dest:
-                dest[day] += source[day]
-            else:
-                dest[day] = source[day]
+            dest.setdefault(day, []).extend(source[day])
 
 
 def search(course_num, filters=(), distinct=False, aysem=AYSEM):

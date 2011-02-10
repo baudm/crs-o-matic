@@ -35,11 +35,7 @@ class Table(object):
 
     def __init__(self, cols, rows, attrs=None):
         self._attrs = attrs or {}
-        data = []
-        for i in xrange(rows):
-            row = [None] * cols
-            data.append(row)
-        self._data = data
+        self._data = [[None] * cols for i in xrange(rows)]
 
     def set_header_row(self, row):
         self._data[0] = map(Cell, row)
@@ -66,9 +62,7 @@ class Table(object):
                     code.append('<td>&nbsp;</td>')
                 else:
                     code.extend(cell.html_list)
-                    rowspan = cell._attrs.get('rowspan', 0)
-                    if rowspan:
-                        rowspans[idx] = rowspan
+                    rowspans[idx] = cell._attrs.get('rowspan', 0)
             code.append('</tr>\n')
         code.append('</table>')
         return ''.join(code)
