@@ -11,7 +11,7 @@ $(document).ready(function () {
 	pages > 1 && $('.pagination').paginate({
 		count: pages,
 		start: 1,
-		display: 7,
+		display: 20,
 		border: true,
 		border_color: '#fff',
 		text_color: '#fff',
