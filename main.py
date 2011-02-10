@@ -82,8 +82,6 @@ class MainPage(webapp.RequestHandler):
     def post(self):
         searchkey = cgi.escape(self.request.get('searchkey'))
         terms = [s for s in searchkey.split('\r\n') if s]
-        # Sort search queries to have the same output each and every time (for the same input).
-        terms.sort()
         desired, classes = self._search(terms)
         scheds = crs.get_schedules(*classes) if classes else None
 

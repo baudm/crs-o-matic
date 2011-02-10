@@ -345,6 +345,8 @@ def search(course_num, filters=(), distinct=False, aysem=AYSEM):
     classes = parser.feed(data)
     if distinct:
         _merge_similar(classes)
+    # Sort by the odds of getting a class
+    classes.sort(key=Class.get_odds, reverse=True)
     return classes
 
 
