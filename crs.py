@@ -22,12 +22,13 @@ import urllib
 import urllib2
 
 from BeautifulSoup import BeautifulSoup, SoupStrainer
-from htmltable import HTMLTable
+from html import Table
 # sets module is deprecated since Python 2.6
 try:
     set
 except NameError:
     from sets import Set as set
+# Python 2.5 compatibility
 try:
     from itertools import product
 except ImportError:
@@ -123,14 +124,12 @@ class Schedule(list):
                 map(times.extend, i)
         times = list(set(times))
         times.sort()
-        table = HTMLTable(len(times), 7, {'class': 'schedule', 'cellpadding': 0, 'cellspacing': 0})
+        table = Table(7, len(times), {'class': 'schedule', 'cellpadding': 0, 'cellspacing': 0})
         day_map = {'M': 1, 'T': 2, 'W': 3, 'Th': 4, 'F': 5, 'S': 6}
-        for i, header in enumerate(('Time', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday')):
-            table.set_cell_type(0, i, 'th')
-            table.set_cell_data(0, i, header)
+        table.set_header_row(('Time', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'))
         table.set_cell_attrs(0, 0, {'class': 'time'})
         for idx in xrange(len(times) - 1):
-            table.set_cell_data(idx + 1, 0, "%s-%s" % (str(times[idx]), str(times[idx + 1])))
+            table.set_cell(0, idx + 1, "%s-%s" % (str(times[idx]), str(times[idx + 1])))
         for class_ in self:
             for day in class_.schedule:
                 day_i = day_map[day]
@@ -138,11 +137,11 @@ class Schedule(list):
                     start, end = interval
                     s = times.index(start)
                     e = times.index(end)
+                    attrs = {'class': 'highlight'}
                     if (e - s) != 1:
-                        table.set_cell_rowspan(s + 1, day_i, e - s)
-                    table.set_cell_attrs(s + 1, day_i, {'class': 'highlight'})
-                    table.set_cell_data(s + 1, day_i, class_.name)
-        return table.return_html()
+                        attrs['rowspan'] = e - s
+                    table.set_cell(day_i, s + 1, class_.name, attrs)
+        return table.html
 
     @staticmethod
     def _get_prob(stats):
@@ -156,11 +155,9 @@ class Schedule(list):
         return prob
 
     def get_stats(self):
-        table = HTMLTable(len(self), 2, {'class': 'schedule', 'cellpadding': 0, 'cellspacing': 0})
-        table.set_cell_attrs(0, 1, {'class': 'probability'})
-        for i, header in enumerate(['Class', 'Prob.']):
-            table.set_cell_type(0, i, 'th')
-            table.set_cell_data(0, i, header)
+        table = Table(2, len(self) + 3, {'class': 'schedule', 'cellpadding': 0, 'cellspacing': 0})
+        table.set_header_row(('Class', 'Prob.'))
+        table.set_cell_attrs(1, 0, {'class': 'probability'})
         prob_list = []
         ctr = 1
         for c in self:
@@ -175,19 +172,17 @@ class Schedule(list):
             # Get average, for now
             prob_class = sum(probs)/len(probs)
             prob_list.append(prob_class)
-            table.set_cell_data(ctr, 0, data)
-            table.set_cell_data(ctr, 1, "%.2f%%" % (100 * prob_class, ))
+            table.set_cell(0, ctr, data)
+            table.set_cell(1, ctr, "%.2f%%" % (100 * prob_class, ))
             ctr += 1
         prob = sum(prob_list)/len(self)
         stdev = math.sqrt(sum(map(lambda x: (x-prob)*(x-prob), prob_list))/len(self))
-        table.set_cell_data(ctr, 0, 'Mean')
-        table.set_cell_data(ctr, 1, "%.2f%%" % (100 * prob, ))
-        table.set_cell_data(ctr + 1, 0, 'Std. Dev.')
-        table.set_cell_data(ctr + 1, 1, "%.2f%%" % (100 * stdev, ))
-        for i in xrange(ctr, ctr + 2):
-            table.set_cell_attrs(i, 0, {'class': 'highlight'})
-            table.set_cell_attrs(i, 1, {'class': 'highlight'})
-        return table.return_html()
+        attrs = {'class': 'highlight'}
+        table.set_cell(0, ctr, 'Mean', attrs)
+        table.set_cell(1, ctr, "%.2f%%" % (100 * prob, ), attrs)
+        table.set_cell(0, ctr + 1, 'Std. Dev.', attrs)
+        table.set_cell(1, ctr + 1, "%.2f%%" % (100 * stdev, ), attrs)
+        return table.html
 
 
 class ClassParser(object):
