@@ -26,9 +26,7 @@ class Cell(object):
     @property
     def html_list(self):
         code = ['<', self._tag]
-        for k, v in self._attrs.iteritems():
-            attr = ' %s="%s"' % (k, v)
-            code.append(attr)
+        code.extend([' %s="%s"' % (k, v) for k, v in self._attrs.iteritems()])
         code.extend(['>', self._data, '</', self._tag, '>'])
         return code
 
@@ -55,9 +53,7 @@ class Table(object):
     @property
     def html(self):
         code = ['<table']
-        for k, v in self._attrs.iteritems():
-            attr = ' %s="%s"' % (k, v)
-            code.append(attr)
+        code.extend([' %s="%s"' % (k, v) for k, v in self._attrs.iteritems()])
         code.append('>\n')
         rowspans = {}
         for row in self._data:
