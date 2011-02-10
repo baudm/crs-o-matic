@@ -60,9 +60,8 @@ def _merge_similar(classes):
         while j < len(classes):
             if classes[i].schedule == classes[j].schedule:
                 # Add to similar classes
-                classes[i].similar.append(classes[j])
-                # Remove from list
-                classes.remove(classes[j])
+                append = classes[i].similar.append
+                append(classes.pop(j))
             else:
                 j += 1
         i += 1
@@ -96,6 +95,19 @@ class Class(object):
         self.schedule = None
         self.stats = None
         self.similar = []
+
+    def get_odds(self):
+        try:
+            prob = float(self.stats[0]) / self.stats[2]
+        except ZeroDivisionError:
+            prob = 1.0
+        # Normalize
+        if prob > 1.0:
+            prob = 1.0
+        probs = map(Class.get_odds, self.similar)
+        probs.append(prob)
+        # Get average, for now
+        return sum(probs)/len(probs)
 
 
 class ScheduleConflict(Exception):
@@ -143,17 +155,6 @@ class Schedule(list):
                     table.set_cell(day_i, s + 1, class_.name, attrs)
         return table.html
 
-    @staticmethod
-    def _get_prob(stats):
-        try:
-            prob = float(stats[0]) / stats[2]
-        except ZeroDivisionError:
-            prob = 1.0
-        # Normalize
-        if prob > 1.0:
-            prob = 1.0
-        return prob
-
     def get_stats(self):
         table = Table(2, len(self) + 3, {'class': 'schedule', 'cellpadding': 0, 'cellspacing': 0})
         table.set_header_row(('Class', 'Prob.'))
@@ -161,15 +162,12 @@ class Schedule(list):
         prob_list = []
         ctr = 1
         for c in self:
-            probs = [self._get_prob(c.stats)]
             data = "%s %s" % (c.name, c.section)
             if c.similar:
                 sections = [data]
                 sections.extend([s.section for s in c.similar])
                 data = "/ ".join(sections)
-                probs.append(self._get_prob(s.stats))
-            # Get average, for now
-            prob_class = sum(probs)/len(probs)
+            prob_class = c.get_odds()
             prob_list.append(prob_class)
             table.set_cell(0, ctr, data)
             table.set_cell(1, ctr, "%.2f%%" % (100 * prob_class, ))
