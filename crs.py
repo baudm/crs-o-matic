@@ -45,8 +45,7 @@ except ImportError:
             yield tuple(prod)
 
 
-AYSEM = "120102"
-URI = "http://crs.upd.edu.ph/schedule"
+URI = "https://crs.upd.edu.ph/schedule"
 
 
 def _strftime(fmt, t):
@@ -326,7 +325,7 @@ class ClassParser(object):
             dest.setdefault(day, []).extend(source[day])
 
 
-def search(course_num, filters=(), distinct=False, aysem=AYSEM):
+def search(course_num, aysem, filters=(), distinct=False):
     """Search using CRS"""
     # Stupid code for PE classes
     pe = None
