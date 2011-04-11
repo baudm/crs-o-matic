@@ -28,8 +28,8 @@ template.register_template_library('filters')
 import crs
 
 
-AYSEM = '120103'
-SEM = 'Summer 2011'
+TERM = crs.get_current_term()
+SEM = crs.get_term_name(TERM)
 
 
 class MainPage(webapp.RequestHandler):
@@ -54,7 +54,7 @@ class MainPage(webapp.RequestHandler):
                 course_num = s[0]
                 filters = []
             course_num = ' '.join(course_num.split())
-            c = crs.search(course_num, AYSEM, filters, True)
+            c = crs.search(course_num, TERM, filters, True)
             if c:
                 classes.append(c)
                 if not c[0].name.startswith('CWTS') and not c[0].name.startswith('PE '):

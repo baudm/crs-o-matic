@@ -45,7 +45,7 @@ except ImportError:
             yield tuple(prod)
 
 
-URI = "https://crs.upd.edu.ph/schedule"
+URI = 'https://crs.upd.edu.ph'
 
 
 def _strftime(fmt, t):
@@ -325,7 +325,36 @@ class ClassParser(object):
             dest.setdefault(day, []).extend(source[day])
 
 
-def search(course_num, aysem, filters=(), distinct=False):
+def get_current_term():
+    request = urllib2.Request(URI)
+    request.add_header('User-Agent', 'Python-urllib/CRS-o-matic')
+    page = urllib2.urlopen(request)
+    data = page.read()
+    page.close()
+    ul = SoupStrainer('ul')
+    soup = BeautifulSoup(data, parseOnlyThese=ul)
+    # Find all links from the last <ul>
+    links = soup.findAll('ul')[-1].findAll('a')
+    # Get only the correct links
+    links = filter(lambda a: a['href'].split('/')[-1].startswith('1'), links)
+    links.sort(key=lambda a: a['href'].split('/')[-1])
+    return links[-1]['href'].split('/')[-1]
+
+
+def get_term_name(term):
+    sem = {
+        '1': '1st Semester',
+        '2': '2nd Semester',
+        '3': 'Summer'
+    }
+    s = sem[term[5]]
+    start = int(term[1:5])
+    end = start + 1
+    name = '%s AY %d-%d' % (s, start, end)
+    return name
+
+
+def search(course_num, term=None, filters=(), distinct=False):
     """Search using CRS"""
     # Stupid code for PE classes
     pe = None
@@ -334,7 +363,9 @@ def search(course_num, aysem, filters=(), distinct=False):
         course_num = ' '.join(c[:2])
         if len(c) == 3 and not c[2].isdigit():
             pe = c[2]
-    url = '%s/%s/%s' % (URI, aysem, urllib.quote(course_num))
+    if term is None:
+        term = get_current_term()
+    url = '%s/schedule/%s/%s' % (URI, term, urllib.quote(course_num))
     request = urllib2.Request(url)
     request.add_header('User-Agent', 'Python-urllib/CRS-o-matic')
     page = urllib2.urlopen(request)
