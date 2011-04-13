@@ -106,7 +106,7 @@ class Class(object):
         probs = map(Class.get_odds, self.similar)
         probs.append(prob)
         # Get average, for now
-        return sum(probs)/len(probs)
+        return sum(probs) / len(probs)
 
 
 class ScheduleConflict(Exception):
@@ -261,11 +261,13 @@ class ClassParser(object):
 
     @staticmethod
     def _parse_time(data):
-        start, end = data.upper().split('-')
+        start, end = map(str.strip, str(data).upper().split('-'))
+        # If both start and end are digits, they are probably room numbers.
+        if start.isdigit() and end.isdigit():
+            raise ValueError
 
         if not end.endswith('M'):
-            # Append 'M'.
-            end = "".join([end, 'M'])
+            end += 'M'
 
         for fmt in ['%I%p', '%I:%M%p']:
             try:
@@ -279,11 +281,11 @@ class ClassParser(object):
         end_hour = int(_strftime('%I', time_end))
 
         if start.endswith('A') or start.endswith('P'):
-            # Append 'M'.
-            start = "".join([start, 'M'])
+            # Append 'M'
+            start += 'M'
         elif start_hour <= end_hour and end_hour != 12:
-            # Append the same am/pm to the start time.
-            start = "".join([start, _strftime("%P", time_end)])
+            # Append the same am/pm to the start time
+            start += _strftime("%P", time_end)
 
         for fmt in ['%I', '%I:%M', '%I%p', '%I:%M%p']:
             try:
