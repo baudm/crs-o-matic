@@ -203,9 +203,9 @@ class ClassParser(object):
                 code, name, credit, schedule, stats, remarks = tr.findAll('td')
             except ValueError:
                 continue
-            kls = Class(code=code.string.strip())
+            kls = Class(code=code.contents[0].strip())
             # name, section
-            kls.name, kls.section = name.string.rsplit(None, 1)
+            kls.name, kls.section = name.contents[0].rsplit(None, 1)
             # Remove extra spaces, if any
             kls.name = ' '.join(kls.name.split())
             # Filter classes based on the course number
@@ -216,7 +216,7 @@ class ClassParser(object):
                 if kls.name.lower() != self.course_num + ' ' + self.pe:
                     continue
             # credit
-            kls.credit = float(credit.string.strip())
+            kls.credit = float(credit.contents[0].strip())
             # schedule
             schedule = schedule.contents[0].strip()
             kls.schedule = self._parse_sched(schedule)
