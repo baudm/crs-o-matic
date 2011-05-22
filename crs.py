@@ -226,8 +226,23 @@ class ClassParser(object):
             except ValueError:
                 # get rid of DISSOLVED classes
                 continue
-            if ' lab ' in schedule or  ' disc ' in schedule:
+            if ' disc ' in schedule:
                 children.append(kls)
+            elif ' lab ' in schedule:
+                # Is this really a lab class? or just a typo?
+                # Check the timeslots of all days in the schedule
+                # to see if at least one timeslot is at least 2 hours
+                child = False
+                for dayscheds in kls.schedule.values():
+                    for timeslot in dayscheds:
+                        hours = timeslot[1][0] - timeslot[0][0]
+                        if hours > 1:
+                            child = True
+                            break
+                if child:
+                    children.append(kls)
+                else:
+                    parents[kls.section] = kls
             else:
                 parents[kls.section] = kls
         return self._postprocess(parents, children)
