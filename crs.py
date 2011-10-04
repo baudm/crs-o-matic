@@ -320,6 +320,8 @@ class ClassParser(object):
         elif start_hour <= end_hour and end_hour != 12:
             # Append the same am/pm to the start time
             start += _strftime('%P', time_end)
+        elif start_hour == 12:
+            start += 'PM'
 
         for fmt in ['%I', '%I:%M', '%I%p', '%I:%M%p']:
             try:
