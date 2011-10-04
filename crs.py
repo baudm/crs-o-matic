@@ -165,7 +165,7 @@ class Schedule(list):
             if c.similar:
                 sections = [data]
                 sections.extend([s.section for s in c.similar])
-                data = '/ '.join(sections)
+                data = ', '.join(sections)
             prob_class = c.get_odds()
             prob_list.append(prob_class)
             table.set_cell(0, ctr, data)
