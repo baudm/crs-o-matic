@@ -96,17 +96,22 @@ class Class(object):
         self.similar = []
 
     def get_odds(self):
+        available = 0
+        demand = 0
+        # Get the cumulative demand and available slots
+        for c in [self] + self.similar:
+            # Only include stats with non-zero available slots
+            if c.stats[0]:
+                available += c.stats[0]
+                demand += c.stats[2]
         try:
-            prob = float(self.stats[0]) / self.stats[2]
+            prob = float(available) / demand
         except ZeroDivisionError:
             prob = 1.0
         # Normalize
         if prob > 1.0:
             prob = 1.0
-        probs = map(Class.get_odds, self.similar)
-        probs.append(prob)
-        # Get average, for now
-        return sum(probs) / len(probs)
+        return prob
 
 
 class ScheduleConflict(Exception):
