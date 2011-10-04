@@ -72,7 +72,7 @@ class Time(tuple):
         return super(Time, cls).__new__(cls, (hour, minute))
 
     def __repr__(self):
-        return _strftime("%I:%M%P", self)
+        return _strftime('%I:%M%P', self)
 
 
 class Interval(tuple):
@@ -81,7 +81,7 @@ class Interval(tuple):
         return super(Interval, cls).__new__(cls, (start, end))
 
     def __repr__(self):
-        return "<%s-%s>" % self
+        return '<%s-%s>' % self
 
 
 class Class(object):
@@ -125,7 +125,7 @@ class Schedule(list):
                         if (dur_new[0] <= dur[0] and dur_new[1] >= dur[1]) or \
                            (dur_new[0] >= dur[0] and dur_new[1] <= dur[1]) or \
                            dur[0] < dur_new[0] < dur[1] or dur[0] < dur_new[1] < dur[1]:
-                            raise ScheduleConflict("%s conflicts with %s" % (class_, c))
+                            raise ScheduleConflict('%s conflicts with %s' % (class_, c))
         super(Schedule, self).append(class_)
 
     def get_table(self):
@@ -139,7 +139,7 @@ class Schedule(list):
         table.set_header_row(('Time', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'))
         table.set_cell_attrs(0, 0, {'class': 'time'})
         for idx in xrange(len(times) - 1):
-            table.set_cell(0, idx + 1, "%s-%s" % (str(times[idx]), str(times[idx + 1])))
+            table.set_cell(0, idx + 1, '%s-%s' % (str(times[idx]), str(times[idx + 1])))
         day_map = {'M': 1, 'T': 2, 'W': 3, 'Th': 4, 'F': 5, 'S': 6}
         for class_ in self:
             for day in class_.schedule:
@@ -161,23 +161,23 @@ class Schedule(list):
         prob_list = []
         ctr = 1
         for c in self:
-            data = "%s %s" % (c.name, c.section)
+            data = '%s %s' % (c.name, c.section)
             if c.similar:
                 sections = [data]
                 sections.extend([s.section for s in c.similar])
-                data = "/ ".join(sections)
+                data = '/ '.join(sections)
             prob_class = c.get_odds()
             prob_list.append(prob_class)
             table.set_cell(0, ctr, data)
-            table.set_cell(1, ctr, "%.2f%%" % (100 * prob_class, ))
+            table.set_cell(1, ctr, '%.2f%%' % (100 * prob_class, ))
             ctr += 1
         prob = sum(prob_list)/len(self)
         stdev = math.sqrt(sum(map(lambda x: (x-prob)*(x-prob), prob_list))/len(self))
         attrs = {'class': 'highlight'}
         table.set_cell(0, ctr, 'Mean', attrs)
-        table.set_cell(1, ctr, "%.2f%%" % (100 * prob, ), attrs)
+        table.set_cell(1, ctr, '%.2f%%' % (100 * prob, ), attrs)
         table.set_cell(0, ctr + 1, 'Std. Dev.', attrs)
-        table.set_cell(1, ctr + 1, "%.2f%%" % (100 * stdev, ), attrs)
+        table.set_cell(1, ctr + 1, '%.2f%%' % (100 * stdev, ), attrs)
         return table.html
 
 
@@ -307,7 +307,7 @@ class ClassParser(object):
             start += 'M'
         elif start_hour <= end_hour and end_hour != 12:
             # Append the same am/pm to the start time
-            start += _strftime("%P", time_end)
+            start += _strftime('%P', time_end)
 
         for fmt in ['%I', '%I:%M', '%I%p', '%I:%M%p']:
             try:
