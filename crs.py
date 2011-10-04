@@ -208,6 +208,7 @@ class ClassParser(object):
             try:
                 name += ' ' + extra
             except NameError:
+                # This is a PE 1 class, no extra data
                 pass
         return name, section
 
@@ -386,12 +387,12 @@ def get_term_name(term):
 def search(course_num, term=None, filters=(), distinct=False):
     """Search using CRS"""
     # For filtering to work, PE classes have to be specified as: PE <number> <code>
-    # However, for CRS search to work, this format should be used: PE <number>
+    # However, for CRS search to work, the format should be:     PE <number>
     if not course_num.upper().startswith('PE '):
         search_key = course_num
     else:
-        # Drop the last word
-        search_key = course_num.rsplit(None, 1)[0]
+        # Include only the first two words, i.e. PE <number>, in the search key
+        search_key = ' '.join(course_num.split()[:2])
     if term is None:
         term = get_current_term()
     url = '%s/schedule/%s/%s' % (URI, term, urllib.quote(search_key))
