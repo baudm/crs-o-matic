@@ -20,16 +20,22 @@
 
 				<strong>Clarification of Terms:</strong>
 				<ul>
-					<li>probability - the chances of getting a particular class; probability = 100% means a 'sure shot'.</li>
-					<li>mean - the mean of the probabilities of the classes in a particular schedule.</li>
-					<li>standard deviation - the standard deviation of the probabilities of the classes in a particular schedule.</li>
+					<li><em>probability</em> - the chances of getting a particular class; probability = 100% means a 'sure shot'.</li>
+					<li><em>mean</em> - the mean of the probabilities of the classes in a particular schedule.</li>
+					<li><em>standard deviation</em> - the standard deviation of the probabilities of the classes in a particular schedule.</li>
 				</ul>
 
 				<strong>NOTES:</strong>
 				<ul>
 					<li>You would want a schedule with a high probability mean and a low standard deviation.</li>
-					<li>This may eat a lot of resources when dealing with a large number of classes.</li>
-					<li>For classes with identical schedules, the average probability is shown.</li>
+					<li>For classes with identical schedules, the probability is computed using the total demand and total available slots.</li>
+				</ul>
+
+				<strong>LIMITATIONS:</strong>
+				<ul>
+					<li>The parent-child relationship of classes is inferred from their sections.</li>
+					<li>Course numbers with obscure naming formats might be unsupported.</li>
+					<li>This may eat a lot of [server-side] resources when dealing with a large number of classes.</li>
 				</ul>
 
 				<strong>Disclaimer:</strong>
