@@ -199,17 +199,23 @@ class ClassParser(object):
 
     @staticmethod
     def _tokenize_name(data):
-        try:
-            name, num, section = data.split()
-        except ValueError:
-            name, num, extra, section = data.split()
-        name += ' ' + num
-        if name.startswith('PE '):
-            try:
-                name += ' ' + extra
-            except NameError:
-                # This is a PE 1 class, no extra data
-                pass
+        num = extra = ''
+        data = data.split()
+        # Most common form
+        if len(data) == 3:
+            name, num, section = data
+        # For PE 2 and the like
+        elif len(data) == 4:
+            name, num, extra, section = data
+        # Special case for STS
+        elif len(data) == 2:
+            name, section = data
+
+        if num:
+            name += ' ' + num
+        # Append extra data for PE classes (e.g. PE 2 TN)
+        if extra and name.startswith('PE '):
+            name += ' ' + extra
         return name, section
 
     def feed(self, data):
