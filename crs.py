@@ -183,15 +183,28 @@ class Schedule(list):
 
 class ClassParser(object):
 
-    def __init__(self, course_num, pe=None, filters=()):
+    def __init__(self, course_num, filters=()):
         self.course_num = course_num.lower()
-        self.pe = pe
         if filters:
             self.whitelist = [i.upper() for i in filters if not i.startswith('!')]
             self.blacklist = [i.upper().lstrip('!') for i in filters if i.startswith('!')]
         else:
             self.whitelist = []
             self.blacklist = []
+
+    @staticmethod
+    def _tokenize_name(data):
+        try:
+            name, num, section = data.split()
+        except ValueError:
+            name, num, extra, section = data.split()
+        name += ' ' + num
+        if name.startswith('PE '):
+            try:
+                name += ' ' + extra
+            except NameError:
+                pass
+        return name, section
 
     def feed(self, data):
         parents = {}
@@ -205,16 +218,10 @@ class ClassParser(object):
                 continue
             kls = Class(code=code.contents[0].strip())
             # name, section
-            kls.name, kls.section = name.contents[0].rsplit(None, 1)
-            # Remove extra spaces, if any
-            kls.name = ' '.join(kls.name.split())
+            kls.name, kls.section = self._tokenize_name(name.contents[0])
             # Filter classes based on the course number
-            if self.pe is None:
-                if kls.name.lower() != self.course_num:
-                    continue
-            else:
-                if kls.name.lower() != self.course_num + ' ' + self.pe:
-                    continue
+            if kls.name.lower() != self.course_num:
+                continue
             # credit
             kls.credit = float(credit.contents[0].strip())
             # schedule
@@ -236,7 +243,7 @@ class ClassParser(object):
                 for dayscheds in kls.schedule.values():
                     for timeslot in dayscheds:
                         hours = timeslot[1][0] - timeslot[0][0]
-                        if hours > 1:
+                        if hours >= 2:
                             child = True
                             break
                 if child:
@@ -373,22 +380,22 @@ def get_term_name(term):
 
 def search(course_num, term=None, filters=(), distinct=False):
     """Search using CRS"""
-    # Stupid code for PE classes
-    pe = None
-    c = course_num.lower().split()
-    if c[0] == 'pe':
-        course_num = ' '.join(c[:2])
-        if len(c) == 3 and not c[2].isdigit():
-            pe = c[2]
+    # For filtering to work, PE classes have to be specified as: PE <number> <code>
+    # However, for CRS search to work, this format should be used: PE <number>
+    if not course_num.upper().startswith('PE '):
+        search_key = course_num
+    else:
+        # Drop the last word
+        search_key = course_num.rsplit(None, 1)[0]
     if term is None:
         term = get_current_term()
-    url = '%s/schedule/%s/%s' % (URI, term, urllib.quote(course_num))
+    url = '%s/schedule/%s/%s' % (URI, term, urllib.quote(search_key))
     request = urllib2.Request(url)
     request.add_header('User-Agent', 'Python-urllib/CRS-o-matic')
     page = urllib2.urlopen(request)
     data = page.read()
     page.close()
-    parser = ClassParser(course_num, pe, filters)
+    parser = ClassParser(course_num, filters)
     classes = parser.feed(data)
     if distinct:
         _merge_similar(classes)
