@@ -75,10 +75,10 @@
 					<table class="parent-table">
 						<tr>
 							<td class="first">
-							{{ sched.get_table }}
+							{{ sched.get_table|safe }}
 							</td>
 							<td>
-							{{ sched.get_stats }}
+							{{ sched.get_stats|safe }}
 							</td>
 						</tr>
 					</table>
