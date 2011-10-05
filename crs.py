@@ -241,7 +241,7 @@ class ClassParser(object):
             kls.schedule = self._parse_sched(schedule)
             # stats
             try:
-                kls.stats = tuple([int(i.strip('/')) for i in stats.text.split() if i != '/'])
+                kls.stats = tuple(map(int, stats.text.split('/')))
             except ValueError:
                 # get rid of DISSOLVED classes
                 continue
