@@ -210,6 +210,11 @@ class ClassParser(object):
         # Special case for STS
         elif len(data) == 2:
             name, section = data
+        # There must be extra spaces. Just construct the name from
+        # the first two words and the section from the remaining words.
+        else:
+            name = ' '.join(data[:2])
+            section = ' '.join(data[2:])
 
         if num:
             name += ' ' + num
