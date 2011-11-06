@@ -19,7 +19,26 @@
 import math
 import time
 import urllib
-import urllib2
+
+# Make crs.py usable outside of GAE
+# urlfetch.fetch() has to be used when running in GAE so that
+# validate_certificate can be set to False
+try:
+    from google.appengine.api.urlfetch import fetch
+except ImportError:
+    import urllib2
+
+    class Result(object):
+
+        def __init__(self, content):
+            self.content = content
+
+    def fetch(url, headers={}, validate_certificate=None):
+        request = urllib2.Request(url)
+        for k, v in headers.iteritems():
+            request.add_header(k, v)
+        data = urllib2.urlopen(request).read()
+        return Result(data)
 
 from BeautifulSoup import BeautifulSoup, SoupStrainer
 from html import Table
@@ -46,6 +65,7 @@ except ImportError:
 
 
 URI = 'https://crs.upd.edu.ph'
+HTTP_HEADERS = {'User-Agent': 'Python-urllib/CRS-o-matic'}
 
 
 def _strftime(fmt, t):
@@ -369,11 +389,8 @@ class ClassParser(object):
 
 
 def get_current_term():
-    request = urllib2.Request(URI)
-    request.add_header('User-Agent', 'Python-urllib/CRS-o-matic')
-    page = urllib2.urlopen(request)
-    data = page.read()
-    page.close()
+    result = fetch(URI, headers=HTTP_HEADERS, validate_certificate=False)
+    data = result.content
     ul = SoupStrainer('ul')
     soup = BeautifulSoup(data, parseOnlyThese=ul)
     # Find all links from the last <ul>
@@ -409,11 +426,8 @@ def search(course_num, term=None, filters=(), distinct=False):
     if term is None:
         term = get_current_term()
     url = '%s/schedule/%s/%s' % (URI, term, urllib.quote(search_key))
-    request = urllib2.Request(url)
-    request.add_header('User-Agent', 'Python-urllib/CRS-o-matic')
-    page = urllib2.urlopen(request)
-    data = page.read()
-    page.close()
+    result = fetch(url, headers=HTTP_HEADERS, validate_certificate=False)
+    data = result.content
     parser = ClassParser(course_num, filters)
     classes = parser.feed(data)
     if distinct:
