@@ -393,8 +393,12 @@ def get_current_term():
     data = result.content
     ul = SoupStrainer('ul')
     soup = BeautifulSoup(data, parseOnlyThese=ul)
-    # Find all links from the last <ul>
-    links = soup.findAll('ul')[-1].findAll('a')
+    # Find all links starting from the last <ul>
+    links = []
+    index = -1
+    while not links:
+        links = soup.findAll('ul')[index].findAll('a')
+        index -= 1
     # Get only the correct links
     links = filter(lambda a: a['href'].split('/')[-1].startswith('1'), links)
     links.sort(key=lambda a: a['href'].split('/')[-1])
