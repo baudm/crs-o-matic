@@ -210,12 +210,22 @@ class ClassParser(object):
 
     def __init__(self, course_num, filters=()):
         self.course_num = course_num.lower()
+        if 'cwts' in self.course_num:
+            self.course_num = self._get_fuzzy_cwts_name(self.course_num)
+
         if filters:
             self.whitelist = [i.upper() for i in filters if not i.startswith('!')]
             self.blacklist = [i.upper().lstrip('!') for i in filters if i.startswith('!')]
         else:
             self.whitelist = []
             self.blacklist = []
+
+    @staticmethod
+    def _get_fuzzy_cwts_name(raw_name):
+        tokens = str(raw_name).split()
+        tokens = map(str.strip, tokens, [' -12']*len(tokens))
+        tokens = filter(None, tokens)
+        return ' '.join(tokens)
 
     @staticmethod
     def _tokenize_name(data):
@@ -243,9 +253,15 @@ class ClassParser(object):
             kls = Class(code=code.contents[0].strip())
             # name, section
             kls.name, kls.section = self._tokenize_name(name.contents[0])
+
+            # Get class name for filtering
+            class_name = kls.name.lower()
+            if 'cwts' in self.course_num:
+                class_name = self._get_fuzzy_cwts_name(class_name)
+
             # Filter classes based on the course number
-            # if requested class is not CWTS
-            if kls.name.lower() != self.course_num and 'cwts' not in self.course_num:
+            # except in the case where 'CWTS' is the search key
+            if class_name != self.course_num and self.course_num != 'cwts':
                 continue
             # credit
             kls.credit = float(credit.contents[0].strip())
