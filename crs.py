@@ -221,26 +221,13 @@ class ClassParser(object):
     def _tokenize_name(data):
         num = extra = ''
         data = data.split()
-        # Most common form
-        if len(data) == 3:
-            name, num, section = data
-        # For PE 2 and the like
-        elif len(data) == 4:
-            name, num, extra, section = data
-        # Special case for STS
-        elif len(data) == 2:
-            name, section = data
-        # There must be extra spaces. Just construct the name from
-        # the first two words and the section from the remaining words.
-        else:
-            name = ' '.join(data[:2])
-            section = ' '.join(data[2:])
-
-        if num:
-            name += ' ' + num
-        # Append extra data for PE classes (e.g. PE 2 TN)
-        if extra and name.startswith('PE '):
-            name += ' ' + extra
+        # Remove any separating hyphens
+        data = map(unicode.strip, data, ['-']*len(data))
+        data = filter(None, data)
+        # Build the name from the 1st to the 2nd-to-the-last items;
+        # the last item is the section
+        name = ' '.join(data[:-1])
+        section = data[-1]
         return name, section
 
     def feed(self, data):
@@ -257,7 +244,8 @@ class ClassParser(object):
             # name, section
             kls.name, kls.section = self._tokenize_name(name.contents[0])
             # Filter classes based on the course number
-            if kls.name.lower() != self.course_num:
+            # if requested class is not CWTS
+            if kls.name.lower() != self.course_num and 'cwts' not in self.course_num:
                 continue
             # credit
             kls.credit = float(credit.contents[0].strip())
@@ -327,7 +315,6 @@ class ClassParser(object):
 
         if not end.endswith('M'):
             end += 'M'
-
         for fmt in ['%I%p', '%I:%M%p']:
             try:
                 time_end = Time(*time.strptime(end, fmt)[3:5])
@@ -337,7 +324,10 @@ class ClassParser(object):
                 break
         # Get the int value of the hours.
         start_hour = int(start.split(':')[0].rstrip('APM'))
-        end_hour = int(_strftime('%I', time_end))
+        try:
+            end_hour = int(_strftime('%I', time_end))
+        except NameError:
+            raise ValueError
 
         if start.endswith('A') or start.endswith('P'):
             # Append 'M'
@@ -355,7 +345,10 @@ class ClassParser(object):
                 continue
             else:
                 break
-        return Interval(time_start, time_end)
+        try:
+            return Interval(time_start, time_end)
+        except NameError:
+            raise ValueError
 
     @staticmethod
     def _parse_days(data):
