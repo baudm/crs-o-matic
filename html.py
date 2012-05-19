@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 # html - A simplistic HTML Table generator
-# Copyright (C) 2011  Darwin M. Bautista
+# Copyright (C) 2011-2012  Darwin M. Bautista
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
