@@ -33,11 +33,12 @@ except ImportError:
         def __init__(self, content):
             self.content = content
 
-    def fetch(url, headers={}, validate_certificate=None):
+    def fetch(url, headers={}, deadline=None, validate_certificate=None):
         request = urllib2.Request(url)
         for k, v in headers.iteritems():
             request.add_header(k, v)
-        data = urllib2.urlopen(request).read()
+        timeout = 5 if deadline is None else deadline
+        data = urllib2.urlopen(request, timeout=timeout).read()
         return Result(data)
 
 from BeautifulSoup import BeautifulSoup, SoupStrainer
@@ -383,7 +384,7 @@ class ClassParser(object):
 
 
 def get_current_term():
-    result = fetch(URI, headers=HTTP_HEADERS, validate_certificate=False)
+    result = fetch(URI, headers=HTTP_HEADERS, deadline=20, validate_certificate=False)
     data = result.content
     ul = SoupStrainer('ul')
     soup = BeautifulSoup(data, parseOnlyThese=ul)
@@ -424,7 +425,7 @@ def search(course_num, term=None, filters=(), distinct=False):
     if term is None:
         term = get_current_term()
     url = '%s/schedule/%s/%s' % (URI, term, urllib.quote(search_key))
-    result = fetch(url, headers=HTTP_HEADERS, validate_certificate=False)
+    result = fetch(url, headers=HTTP_HEADERS, deadline=20, validate_certificate=False)
     data = result.content
     parser = ClassParser(course_num, filters)
     classes = parser.feed(data)
