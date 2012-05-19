@@ -42,27 +42,13 @@ except ImportError:
 
 from BeautifulSoup import BeautifulSoup, SoupStrainer
 from html import Table
+
+import itertools
 # sets module is deprecated since Python 2.6
 try:
     set
 except NameError:
     from sets import Set as set
-# Python 2.5 compatibility
-try:
-    from itertools import product
-except ImportError:
-    # Equivalent itertools.product() implementation copied from
-    # http://docs.python.org/library/itertools.html#itertools.product
-    def product(*args, **kwds):
-        # product('ABCD', 'xy') --> Ax Ay Bx By Cx Cy Dx Dy
-        # product(range(2), repeat=3) --> 000 001 010 011 100 101 110 111
-        pools = map(tuple, args) * kwds.get('repeat', 1)
-        result = [[]]
-        for pool in pools:
-            result = [x+[y] for x in result for y in pool]
-        for prod in result:
-            yield tuple(prod)
-
 
 URI = 'https://crs.upd.edu.ph'
 HTTP_HEADERS = {'User-Agent': 'Python-urllib/CRS-o-matic'}
@@ -229,7 +215,6 @@ class ClassParser(object):
 
     @staticmethod
     def _tokenize_name(data):
-        num = extra = ''
         data = data.split()
         # Remove any separating hyphens
         data = map(unicode.strip, data, ['-']*len(data))
@@ -452,7 +437,7 @@ def search(course_num, term=None, filters=(), distinct=False):
 
 def get_schedules(*classes):
     schedules = []
-    for combination in product(*classes):
+    for combination in itertools.product(*classes):
         sched = Schedule()
         try:
             map(sched.append, combination)
@@ -465,7 +450,7 @@ def get_schedules(*classes):
 
 def get_schedules2(*classes):
     """Generator version of get_schedules()"""
-    for combination in product(*classes):
+    for combination in itertools.product(*classes):
         sched = Schedule()
         try:
             map(sched.append, combination)
