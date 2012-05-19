@@ -56,7 +56,7 @@ HTTP_HEADERS = {'User-Agent': 'Python-urllib/CRS-o-matic'}
 
 
 def _strftime(fmt, t):
-    return time.strftime(fmt, (1900, 1, 1, t[0], t[1], 0, 0, 1, -1))
+    return time.strftime(fmt, (2012, 1, 1, t[0], t[1], 0, 0, 1, 0))
 
 
 def _merge_similar(classes):
@@ -79,7 +79,7 @@ class Time(tuple):
         return super(Time, cls).__new__(cls, (hour, minute))
 
     def __repr__(self):
-        return _strftime('%I:%M%P', self)
+        return _strftime('%I:%M%p', self).lower()
 
 
 class Interval(tuple):
@@ -317,6 +317,7 @@ class ClassParser(object):
 
         if not end.endswith('M'):
             end += 'M'
+
         for fmt in ['%I%p', '%I:%M%p']:
             try:
                 time_end = Time(*time.strptime(end, fmt)[3:5])
@@ -336,7 +337,7 @@ class ClassParser(object):
             start += 'M'
         elif start_hour <= end_hour and end_hour != 12:
             # Append the same am/pm to the start time
-            start += _strftime('%P', time_end)
+            start += _strftime('%p', time_end)
         elif start_hour == 12:
             start += 'PM'
 
