@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 # crs-o-matic - CRS Schedule Generator
-# Copyright (C) 2008-2012  Darwin M. Bautista
+# Copyright (C) 2008-2014  Darwin M. Bautista
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -28,8 +28,7 @@ template.register_template_library('tags.filters')
 import crs
 
 
-TERM = crs.get_current_term()
-SEM = crs.get_term_name(TERM)
+SEM, TERM = crs.get_current_term()
 
 
 class MainPage(webapp.RequestHandler):

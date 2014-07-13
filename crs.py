@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 # crs-o-matic - CRS Schedule Generator
-# Copyright (C) 2008-2012  Darwin M. Bautista
+# Copyright (C) 2008-2014  Darwin M. Bautista
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -233,7 +233,7 @@ class ClassParser(object):
         soup = BeautifulSoup(data, parse_only=tbody)
         for tr in soup.find_all('tr'):
             try:
-                code, name, credit, schedule, stats, remarks = tr.find_all('td')
+                code, name, credit, schedule, remarks, slots, demand, restrictions = tr.find_all('td')
             except ValueError:
                 continue
             kls = Class(code=code.contents[0].strip())
@@ -256,10 +256,12 @@ class ClassParser(object):
             kls.schedule = self._parse_sched(schedule)
             # stats
             try:
-                kls.stats = tuple(map(int, stats.get_text().split('/')))
+                stats = slots.get_text().split('/')
             except ValueError:
                 # get rid of DISSOLVED classes
                 continue
+            stats.append(demand.get_text())
+            kls.stats = tuple(map(int, stats))
             if ' disc ' in schedule:
                 children.append(kls)
             elif ' lab ' in schedule:
@@ -385,33 +387,14 @@ class ClassParser(object):
 
 
 def get_current_term():
-    result = fetch(URI, headers=HTTP_HEADERS, deadline=20, validate_certificate=False)
+    result = fetch(URI + '/schedule/', headers=HTTP_HEADERS, deadline=20, validate_certificate=False)
     data = result.content
-    ul = SoupStrainer('ul')
-    soup = BeautifulSoup(data, parse_only=ul)
-    # Find all links starting from the last <ul>
-    links = []
-    index = -1
-    while not links:
-        links = soup.find_all('ul')[index].find_all('a')
-        index -= 1
-    # Get only the correct links
-    links = filter(lambda a: a['href'].split('/')[-1].startswith('1'), links)
-    links.sort(key=lambda a: a['href'].split('/')[-1])
-    return links[-1]['href'].split('/')[-1]
-
-
-def get_term_name(term):
-    sem = {
-        '1': '1st Semester',
-        '2': '2nd Semester',
-        '3': 'Summer'
-    }
-    s = sem[term[5]]
-    start = int(term[1:5])
-    end = start + 1
-    name = '%s AY %d-%d' % (s, start, end)
-    return name
+    tags = SoupStrainer('select')
+    soup = BeautifulSoup(data, parse_only=tags)
+    selected = soup.find(selected='selected')
+    name = selected.get_text()
+    value = selected['value']
+    return name, value
 
 
 def search(course_num, term=None, filters=(), distinct=False):
@@ -424,7 +407,7 @@ def search(course_num, term=None, filters=(), distinct=False):
         # Include only the first two words, i.e. PE <number>, in the search key
         search_key = ' '.join(course_num.split()[:2])
     if term is None:
-        term = get_current_term()
+        name, term = get_current_term()
     url = '%s/schedule/%s/%s' % (URI, term, urllib.quote(search_key))
     result = fetch(url, headers=HTTP_HEADERS, deadline=20, validate_certificate=False)
     data = result.content
