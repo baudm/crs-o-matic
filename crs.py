@@ -41,7 +41,7 @@ except ImportError:
         data = urllib2.urlopen(request, timeout=timeout).read()
         return Result(data)
 
-from BeautifulSoup import BeautifulSoup, SoupStrainer
+from bs4 import BeautifulSoup, SoupStrainer
 from html import Table
 
 import itertools
@@ -230,10 +230,10 @@ class ClassParser(object):
         parents = {}
         children = []
         tbody = SoupStrainer('tbody')
-        soup = BeautifulSoup(data, parseOnlyThese=tbody)
-        for tr in soup.findAll('tr'):
+        soup = BeautifulSoup(data, parse_only=tbody)
+        for tr in soup.find_all('tr'):
             try:
-                code, name, credit, schedule, stats, remarks = tr.findAll('td')
+                code, name, credit, schedule, stats, remarks = tr.find_all('td')
             except ValueError:
                 continue
             kls = Class(code=code.contents[0].strip())
@@ -256,7 +256,7 @@ class ClassParser(object):
             kls.schedule = self._parse_sched(schedule)
             # stats
             try:
-                kls.stats = tuple(map(int, stats.text.split('/')))
+                kls.stats = tuple(map(int, stats.get_text().split('/')))
             except ValueError:
                 # get rid of DISSOLVED classes
                 continue
@@ -388,12 +388,12 @@ def get_current_term():
     result = fetch(URI, headers=HTTP_HEADERS, deadline=20, validate_certificate=False)
     data = result.content
     ul = SoupStrainer('ul')
-    soup = BeautifulSoup(data, parseOnlyThese=ul)
+    soup = BeautifulSoup(data, parse_only=ul)
     # Find all links starting from the last <ul>
     links = []
     index = -1
     while not links:
-        links = soup.findAll('ul')[index].findAll('a')
+        links = soup.find_all('ul')[index].find_all('a')
         index -= 1
     # Get only the correct links
     links = filter(lambda a: a['href'].split('/')[-1].startswith('1'), links)
