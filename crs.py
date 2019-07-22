@@ -262,9 +262,9 @@ class ClassParser(object):
                 continue
             stats.append(demand.get_text())
             kls.stats = tuple(map(int, stats))
-            if ' disc ' in schedule:
+            if ' disc ' in schedule and not ' lec ' in schedule:
                 children.append(kls)
-            elif ' lab ' in schedule:
+            elif ' lab ' in schedule and not ' lec ' in schedule:
                 # Is this really a lab class? or just a typo?
                 # Check the timeslots of all days in the schedule
                 # to see if at least one timeslot is at least 2 hours
