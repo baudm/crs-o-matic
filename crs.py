@@ -246,8 +246,9 @@ class ClassParser(object):
                 class_name = self._get_fuzzy_cwts_name(class_name)
 
             # Filter classes based on the course number
-            # except in the case where 'CWTS' is the search key
-            if class_name != self.course_num and self.course_num != 'cwts':
+            # except in the case where 'CWTS' is the search key,
+            # or in the case of courses like Chem 16 where the lab classes are denoted as Chem 16.1
+            if class_name != self.course_num and self.course_num != 'cwts' and not class_name.startswith(self.course_num + '.'):
                 continue
             # credit
             kls.credit = float(credit.contents[0].strip())
@@ -303,8 +304,11 @@ class ClassParser(object):
                                     break
                             if kls.section[:i] in parent:
                                 break
-                    # Choose the non-zero credit
-                    kls.credit = kls.credit or parents[parent].credit
+                    # Combine the course numbers if they are different
+                    if kls.name != parents[parent].name:
+                        kls.name = parents[parent].name + '/' + kls.name.split()[-1]
+                    # Combine credits
+                    kls.credit += parents[parent].credit
                     self._merge_sched(kls.schedule, parents[parent].schedule)
         else:
             results = filter(self._filter_class, parents.values())
