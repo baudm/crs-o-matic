@@ -246,9 +246,8 @@ class ClassParser(object):
                 class_name = self._get_fuzzy_cwts_name(class_name)
 
             # Filter classes based on the course number
-            # except in the case where 'CWTS' is the search key,
-            # or in the case of courses like Chem 16 where the lab classes are denoted as Chem 16.1
-            if class_name != self.course_num and self.course_num != 'cwts' and not class_name.startswith(self.course_num + '.'):
+            # except in the case where 'CWTS' is the search key
+            if class_name != self.course_num and self.course_num != 'cwts':
                 continue
             # credit
             kls.credit = float(credit.contents[0].strip())
@@ -295,21 +294,27 @@ class ClassParser(object):
             # Merge schedules with the respective parent
             if parents:
                 for kls in results:
+                    # Match parents with children based on their sections
                     try:
                         parent = filter(kls.section.startswith, parents.keys())[0]
                     except IndexError:
-                        for i in reversed(xrange(1, len(kls.section))):
+                        matched = False
+                        for i in reversed(xrange(3, len(kls.section))):
                             for parent in parents:
                                 if kls.section[:i] in parent:
+                                    matched = True
                                     break
-                            if kls.section[:i] in parent:
+                            if matched:
                                 break
-                    # Combine the course numbers if they are different
-                    if kls.name != parents[parent].name:
-                        kls.name = parents[parent].name + '/' + kls.name.split()[-1]
-                    # Combine credits
-                    kls.credit += parents[parent].credit
-                    self._merge_sched(kls.schedule, parents[parent].schedule)
+                        if not matched:
+                            continue
+                    p_kls = parents[parent]
+                    # Merge parent info into child
+                    if not kls.section.startswith(p_kls.section):
+                        kls.section = p_kls.section + '/' + kls.section
+                    # Choose the non-zero credit
+                    kls.credit = kls.credit or p_kls.credit
+                    self._merge_sched(kls.schedule, p_kls.schedule)
         else:
             results = filter(self._filter_class, parents.values())
         return results
