@@ -1,12 +1,10 @@
-application: crs-o-matic-hrd
-version: 4
 runtime: python27
 api_version: 1
 threadsafe: false
 
 libraries:
 - name: django
-  version: "1.2"
+  version: "1.4"
 
 handlers:
 - url: /js
