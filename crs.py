@@ -173,11 +173,11 @@ class Schedule(list):
         prob_list = []
         ctr = 1
         for c in self:
-            data = '%s %s' % (c.name, c.section)
+            sections = [c.section]
             if c.similar:
-                sections = [data]
                 sections.extend([s.section for s in c.similar])
-                data = ', '.join(sections)
+            sections = ', '.join(sorted(sections))
+            data = '{} {}'.format(c.name, sections)
             prob_class = c.get_odds()
             prob_list.append(prob_class)
             table.set_cell(0, ctr, data)
