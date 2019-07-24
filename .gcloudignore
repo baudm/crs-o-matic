@@ -1,0 +1,11 @@
+# This file
+.gcloudignore
+# Git-related files
+.git
+.gitignore
+# All other hidden files
+.*
+deploy.sh
+# Backups
+*.orig
+*~

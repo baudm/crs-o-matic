@@ -16,29 +16,29 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-class Cell(object):
+class Cell:
 
     def __init__(self, data, attrs=None, th=True):
-        self._data = str(data)
+        self._data = data
         self._attrs = attrs or {}
         self._tag = 'th' if th else 'td'
 
     @property
     def html_list(self):
         code = ['<', self._tag]
-        code.extend([' %s="%s"' % (k, v) for k, v in self._attrs.iteritems()])
+        code.extend([' {}="{}"'.format(k, v) for k, v in self._attrs.items()])
         code.extend(['>', self._data, '</', self._tag, '>'])
         return code
 
 
-class Table(object):
+class Table:
 
     def __init__(self, cols, rows, attrs=None):
         self._attrs = attrs or {}
-        self._data = [[None] * cols for i in xrange(rows)]
+        self._data = [[None] * cols for i in range(rows)]
 
     def set_header_row(self, row):
-        self._data[0] = map(Cell, row)
+        self._data[0] = list(map(Cell, row))
 
     def set_cell(self, col, row, data, attrs=None):
         self._data[row][col] = Cell(data, attrs, False)
@@ -49,7 +49,7 @@ class Table(object):
     @property
     def html(self):
         code = ['<table']
-        code.extend([' %s="%s"' % (k, v) for k, v in self._attrs.iteritems()])
+        code.extend([' {}="{}"'.format(k, v) for k, v in self._attrs.items()])
         code.append('>\n')
         rowspans = {}
         for row in self._data:

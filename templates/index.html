@@ -3,11 +3,12 @@
 	<head>
 		<title>CRS-o-matic</title>
 		<meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
-		<link rel="stylesheet" type="text/css" href="css/main.css" />
-		<link rel="stylesheet" type="text/css" href="css/jquery.paginate.css" />
+		<link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}" />
+		<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/main.css') }}" />
+		<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/jquery.paginate.css') }}" />
 		<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
-		<script type="text/javascript" src="js/jquery.paginate.js"></script>
-		<script type="text/javascript" src="js/pagination.js"></script>
+		<script type="text/javascript" src="{{ url_for('static', filename='js/jquery.paginate.js') }}"></script>
+		<script type="text/javascript" src="{{ url_for('static', filename='js/pagination.js') }}"></script>
 	</head>
 	<body>
 
@@ -60,31 +61,31 @@
 
 					Total number of units: <strong>{{ desired.units }}</strong>
 					<br /><br />
-					There {{ scheds|pluralize:"is,are" }} {{ scheds|length }} schedule{{ scheds|pluralize }} without conflicts out of {{ desired.possible }} possible schedule{{ desired.possible|pluralize }}:
+					There {{ scheds|pluralize('is', 'are') }} {{ scheds|length }} schedule{{ scheds|pluralize }} without conflicts out of {{ desired.possible }} possible schedule{{ desired.possible|pluralize }}:
 					<br /><br />
 
 					<div class="pagination"></div>
 
 					{% for sched in scheds %}
 
-						{% if forloop.counter|page_start %}
-							 <div id="p{{ forloop.counter|page_id }}" class="page" style="display: none">
+						{% if loop.index|page_start %}
+							 <div id="p{{ loop.index|page_id }}" class="page" style="display: none">
 						{% endif %}
 
-					<h2>{{ forloop.counter }}</h2>
+					<h2>{{ loop.index }}</h2>
 					<table class="parent-table">
 						<tr>
 							<td class="first">
-							{{ sched.get_table|safe }}
+							{{ sched.get_table()|safe }}
 							</td>
 							<td>
-							{{ sched.get_stats|safe }}
+							{{ sched.get_stats()|safe }}
 							</td>
 						</tr>
 					</table>
 					<br />
 
-						{% if forloop.counter|page_end:scheds %}
+						{% if loop.index|page_end(scheds) %}
 							</div>
 						{% endif %}
 
@@ -126,8 +127,8 @@
 					</a>
 				</p>
 				<p class="copyright">
-					Last Update: LAST_UPDATE_DATE<br />
-					Copyright &copy; 2008-2019 <a href="https://github.com/baudm" title="Darwin M. Bautista">Darwin M. Bautista</a>
+					Last Update: LAST_UPDATE_DATE (<a href="https://github.com/baudm/crs-o-matic/commit/VER_FULL">VER_ABBREV</a>)<br />
+					Copyright &copy; 2008-2019 <a href="https://github.com/baudm" title="Darwin Bautista">Darwin Bautista</a>
 				</p>
 			</div>
 		</div>

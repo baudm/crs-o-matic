@@ -18,41 +18,16 @@
 
 import math
 import time
-import urllib
-
-# Make crs.py usable outside of GAE
-# urlfetch.fetch() has to be used when running in GAE so that
-# validate_certificate can be set to False
-try:
-    from google.appengine.api.urlfetch import fetch
-except ImportError:
-    import urllib2
-
-    class Result(object):
-
-        def __init__(self, content):
-            self.content = content
-
-    def fetch(url, headers={}, deadline=None, validate_certificate=None):
-        request = urllib2.Request(url)
-        for k, v in headers.iteritems():
-            request.add_header(k, v)
-        timeout = 5 if deadline is None else deadline
-        data = urllib2.urlopen(request, timeout=timeout).read()
-        return Result(data)
+import requests
 
 from bs4 import BeautifulSoup, SoupStrainer
-from html import Table
+from htmltable import Table
 
 import itertools
-# sets module is deprecated since Python 2.6
-try:
-    set
-except NameError:
-    from sets import Set as set
+from itertools import chain
 
 URI = 'https://crs.upd.edu.ph'
-HTTP_HEADERS = {'User-Agent': 'Python-urllib/CRS-o-matic'}
+HTTP_HEADERS = {'User-Agent': '{} CRS-o-matic/{}'.format(requests.utils.default_user_agent(), 'VER_ABBREV')}
 
 
 def _strftime(fmt, t):
@@ -76,7 +51,7 @@ def _merge_similar(classes):
 class Time(tuple):
 
     def __new__(cls, hour, minute):
-        return super(Time, cls).__new__(cls, (hour, minute))
+        return super().__new__(cls, (hour, minute))
 
     def __repr__(self):
         return _strftime('%I:%M%p', self).lower()
@@ -85,13 +60,13 @@ class Time(tuple):
 class Interval(tuple):
 
     def __new__(cls, start, end):
-        return super(Interval, cls).__new__(cls, (start, end))
+        return super().__new__(cls, (start, end))
 
     def __repr__(self):
-        return '<%s-%s>' % self
+        return '<{}-{}>'.format(*self)
 
 
-class Class(object):
+class Class:
 
     def __init__(self, code=None, name=None, section=None):
         self.code = code
@@ -112,7 +87,7 @@ class Class(object):
                 available += c.stats[0]
                 demand += c.stats[2]
         try:
-            prob = float(available) / demand
+            prob = available / demand
         except ZeroDivisionError:
             prob = 1.0
         # Normalize
@@ -130,28 +105,25 @@ class Schedule(list):
     def append(self, class_):
         for c in self:
             for day in c.schedule:
-                if not day in class_.schedule:
+                if day not in class_.schedule:
                     continue
                 for dur in c.schedule[day]:
                     for dur_new in class_.schedule[day]:
                         if (dur_new[0] <= dur[0] and dur_new[1] >= dur[1]) or \
                            (dur_new[0] >= dur[0] and dur_new[1] <= dur[1]) or \
                            dur[0] < dur_new[0] < dur[1] or dur[0] < dur_new[1] < dur[1]:
-                            raise ScheduleConflict('%s conflicts with %s' % (class_, c))
-        super(Schedule, self).append(class_)
+                            raise ScheduleConflict('{} conflicts with {}'.format(class_, c))
+        super().append(class_)
 
     def get_table(self):
-        times = []
-        for class_ in self:
-            for i in class_.schedule.values():
-                map(times.extend, i)
-        times = list(set(times))
-        times.sort()
+        # Obtain a flat list of all interval bounds
+        times = chain.from_iterable(chain.from_iterable(chain.from_iterable([c.schedule.values() for c in self])))
+        times = sorted(set(times))
         table = Table(7, len(times), {'class': 'schedule', 'cellpadding': 0, 'cellspacing': 0})
         table.set_header_row(('Time', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'))
         table.set_cell_attrs(0, 0, {'class': 'time'})
-        for idx in xrange(len(times) - 1):
-            table.set_cell(0, idx + 1, '%s-%s' % (str(times[idx]), str(times[idx + 1])))
+        for idx in range(len(times) - 1):
+            table.set_cell(0, idx + 1, '{}-{}'.format(times[idx], times[idx + 1]))
         day_map = {'M': 1, 'T': 2, 'W': 3, 'Th': 4, 'F': 5, 'S': 6}
         for class_ in self:
             for day in class_.schedule:
@@ -173,27 +145,25 @@ class Schedule(list):
         prob_list = []
         ctr = 1
         for c in self:
-            sections = [c.section]
-            if c.similar:
-                sections.extend([s.section for s in c.similar])
+            sections = [c.section] + [s.section for s in c.similar]
             sections = ', '.join(sorted(sections))
             data = '{} {}'.format(c.name, sections)
             prob_class = c.get_odds()
             prob_list.append(prob_class)
             table.set_cell(0, ctr, data)
-            table.set_cell(1, ctr, '%.2f%%' % (100 * prob_class, ))
+            table.set_cell(1, ctr, '{:.2f}%'.format(100 * prob_class))
             ctr += 1
         prob = sum(prob_list)/len(self)
-        stdev = math.sqrt(sum(map(lambda x: (x-prob)*(x-prob), prob_list))/len(self))
+        stdev = math.sqrt(sum([(x - prob)*(x - prob) for x in prob_list])/len(self))
         attrs = {'class': 'highlight'}
         table.set_cell(0, ctr, 'Mean', attrs)
-        table.set_cell(1, ctr, '%.2f%%' % (100 * prob, ), attrs)
+        table.set_cell(1, ctr, '{:.2f}%'.format(100 * prob), attrs)
         table.set_cell(0, ctr + 1, 'Std. Dev.', attrs)
-        table.set_cell(1, ctr + 1, '%.2f%%' % (100 * stdev, ), attrs)
+        table.set_cell(1, ctr + 1, '{:.2f}%'.format(100 * stdev), attrs)
         return table.html
 
 
-class ClassParser(object):
+class ClassParser:
 
     def __init__(self, course_num, filters=()):
         self.course_num = course_num.lower()
@@ -209,7 +179,7 @@ class ClassParser(object):
 
     @staticmethod
     def _get_fuzzy_cwts_name(raw_name):
-        tokens = str(raw_name).split()
+        tokens = raw_name.split()
         tokens = map(str.strip, tokens, [' -12']*len(tokens))
         tokens = filter(None, tokens)
         return ' '.join(tokens)
@@ -218,8 +188,8 @@ class ClassParser(object):
     def _tokenize_name(data):
         data = data.split()
         # Remove any separating hyphens
-        data = map(unicode.strip, data, ['-']*len(data))
-        data = filter(None, data)
+        data = map(str.strip, data, ['-']*len(data))
+        data = list(filter(None, data))
         # Build the name from the 1st to the 2nd-to-the-last items;
         # the last item is the section
         name = ' '.join(data[:-1])
@@ -230,15 +200,15 @@ class ClassParser(object):
         parents = {}
         children = []
         tbody = SoupStrainer('tbody')
-        soup = BeautifulSoup(data, parse_only=tbody)
+        soup = BeautifulSoup(data, 'lxml', parse_only=tbody)
         for tr in soup.find_all('tr'):
             try:
                 code, name, credit, schedule, remarks, slots, demand, restrictions = tr.find_all('td')
             except ValueError:
                 continue
-            kls = Class(code=code.contents[0].strip())
+            kls = Class(code=code.text.strip())
             # name, section
-            kls.name, kls.section = self._tokenize_name(name.contents[0])
+            kls.name, kls.section = self._tokenize_name(name.text)
 
             # Get class name for filtering
             class_name = kls.name.lower()
@@ -250,17 +220,17 @@ class ClassParser(object):
             if class_name != self.course_num and self.course_num != 'cwts':
                 continue
             # credit
-            kls.credit = float(credit.contents[0].strip())
+            kls.credit = float(credit.text)
             # schedule
-            schedule = schedule.contents[0].strip()
+            schedule = schedule.text
             kls.schedule = self._parse_sched(schedule)
             # stats
             try:
-                stats = slots.get_text().split('/')
+                stats = slots.text.split('/')
             except ValueError:
                 # get rid of DISSOLVED classes
                 continue
-            stats.append(demand.get_text())
+            stats.append(demand.text)
             kls.stats = tuple(map(int, stats))
             if schedule.count(' disc ') == 1 and not ' lec ' in schedule:
                 children.append(kls)
@@ -296,10 +266,10 @@ class ClassParser(object):
                 for kls in results:
                     # Match parents with children based on their sections
                     try:
-                        parent = filter(kls.section.startswith, parents.keys())[0]
+                        parent = list(filter(kls.section.startswith, parents.keys()))[0]
                     except IndexError:
                         matched = False
-                        for i in reversed(xrange(3, len(kls.section))):
+                        for i in reversed(range(3, len(kls.section))):
                             for parent in parents:
                                 if kls.section[:i] in parent:
                                     matched = True
@@ -317,11 +287,11 @@ class ClassParser(object):
                     self._merge_sched(kls.schedule, p_kls.schedule)
         else:
             results = filter(self._filter_class, parents.values())
-        return results
+        return list(results)
 
     @staticmethod
     def _parse_time(data):
-        start, end = map(str.strip, str(data).upper().split('-'))
+        start, end = tuple(map(str.strip, data.upper().split('-')))
         # If both start and end are digits, they are probably room numbers.
         if start.isdigit() and end.isdigit():
             raise ValueError
@@ -396,12 +366,11 @@ class ClassParser(object):
 
 
 def get_current_term():
-    result = fetch(URI + '/schedule/', headers=HTTP_HEADERS, deadline=20, validate_certificate=False)
-    data = result.content
+    result = requests.get(URI + '/schedule/', headers=HTTP_HEADERS)
     tags = SoupStrainer('select')
-    soup = BeautifulSoup(data, parse_only=tags)
+    soup = BeautifulSoup(result.text, 'lxml', parse_only=tags)
     selected = soup.find(selected='selected')
-    name = selected.get_text()
+    name = selected.text
     value = selected['value']
     return name, value
 
@@ -417,11 +386,10 @@ def search(course_num, term=None, filters=(), distinct=False):
         search_key = ' '.join(course_num.split()[:2])
     if term is None:
         name, term = get_current_term()
-    url = '%s/schedule/%s/%s' % (URI, term, urllib.quote(search_key))
-    result = fetch(url, headers=HTTP_HEADERS, deadline=20, validate_certificate=False)
-    data = result.content
+    url = '{}/schedule/{}/{}'.format(URI, term, search_key)
+    result = requests.get(url, headers=HTTP_HEADERS)
     parser = ClassParser(course_num, filters)
-    classes = parser.feed(data)
+    classes = parser.feed(result.text)
     if distinct:
         _merge_similar(classes)
     # Sort by the odds of getting a class
@@ -434,7 +402,8 @@ def get_schedules(*classes):
     for combination in itertools.product(*classes):
         sched = Schedule()
         try:
-            map(sched.append, combination)
+            for c in combination:
+                sched.append(c)
         except ScheduleConflict:
             continue
         else:
@@ -447,7 +416,8 @@ def get_schedules2(*classes):
     for combination in itertools.product(*classes):
         sched = Schedule()
         try:
-            map(sched.append, combination)
+            for c in combination:
+                sched.append(c)
         except ScheduleConflict:
             continue
         else:
