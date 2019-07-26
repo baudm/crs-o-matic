@@ -16,6 +16,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import hashlib
 import math
 import time
 import requests
@@ -76,6 +77,12 @@ class Class:
         self.schedule = None
         self.stats = None
         self.similar = []
+
+    def __str__(self) -> str:
+        # Get a combined string representation of this class which focuses on the schedule
+        days = sorted(self.schedule.keys())
+        times = [self.schedule[d] for d in days]
+        return '{} {} {}'.format(self.name, days, times)
 
     def get_odds(self):
         available = 0
@@ -161,6 +168,12 @@ class Schedule(list):
         table.set_cell(0, ctr + 1, 'Std. Dev.', attrs)
         table.set_cell(1, ctr + 1, '{:.2f}%'.format(100 * stdev), attrs)
         return table.html
+
+    @property
+    def id(self):
+        # hash based on sorted representations of the individual classes
+        r = ''.join(sorted([str(c) for c in self]))
+        return hashlib.sha1(r.encode('utf-8')).hexdigest()[:5]
 
 
 class ClassParser:
