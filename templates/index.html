@@ -14,33 +14,19 @@
 
 		<div id="wrap">
 			<div id="content">
-				<strong>CRS-o-matic</strong> - a CRS schedule generator and probability and statistics tool written in pure Python<br />
+				<strong>CRS-o-matic</strong> - a class schedule maker. <strong>It does the heavy lifting so you won't have to!</strong><br />
 				<br />
+				<strong>How does it work?</strong>
+				<ol>
+					<li>Simply input the list of classes you desire.</li>
+					<li>Click 'Search' and wait for a while.</li>
+					<li>The CRS is automatically searched for all classes you specified.</li>
+					<li>All possible schedule combinations are tried;</li>
+					<li>But only those without conflict will be in sight.</li>
+				</ol>
+
 				This project is hosted at <a href="https://github.com/baudm/crs-o-matic">GitHub</a>. For bug reports, feature requests, patch submissions, and the like, create a <a href="https://github.com/baudm/crs-o-matic/issues/new">new issue</a>.<br />
 				<br />
-
-				<strong>Definition of Terms:</strong>
-				<ul>
-					<li><em>probability</em> - the chances of getting a particular class; probability = 100% means a 'sure shot'.</li>
-					<li><em>mean</em> - the mean of the probabilities of the classes in a particular schedule.</li>
-					<li><em>standard deviation</em> - the standard deviation of the probabilities of the classes in a particular schedule.</li>
-				</ul>
-
-				<strong>NOTES:</strong>
-				<ul>
-					<li>You would want a schedule with a high probability mean and a low standard deviation.</li>
-					<li>For classes with identical schedules, the probability is computed using the total demand and total available slots.</li>
-				</ul>
-
-				<strong>LIMITATIONS:</strong>
-				<ul>
-					<li>The parent-child relationship of classes is inferred from their sections.</li>
-					<li>Course numbers with obscure naming formats might be unsupported.</li>
-					<li>This may eat a lot of [server-side] resources when dealing with a large number of classes.</li>
-				</ul>
-
-				<strong>Disclaimer:</strong>
-				<p>All data presented by CRS-o-matic ('The Software') are just parsed from the <a href="http://crs.upd.edu.ph/schedule">CRS website</a> and are not modified in any way. Thus, I will not be responsible for any misleading or erroneous information produced by the software due to inconsistencies or errors in the CRS website. I will also not be responsible for any misleading or erroneous information caused by bugs in the software. If you want to know how the software works, feel free to <a href="https://github.com/baudm/crs-o-matic">get the source</a>.</p>
 
 			{% if desired %}
 				<br />
@@ -114,10 +100,39 @@
 						Term: <strong>{{ sem }}</strong><br />
 						<label for="searchkey">Desired subjects (order by preference; case-insensitive; newline-separated):</label><br />
 						<textarea id="searchkey" name="searchkey" rows="10" cols="20"></textarea><br />
-						<input type="submit" value="Submit"/>
+						<input type="submit" value="Search"/>
 					</fieldset>
 				</form>
 			{% endif %}
+
+				<br />
+				<br />
+				<strong>Technical Things You Might Not Care About</strong>
+				<br />
+				<br />
+				<em>Schedule ID</em>
+				<ul>
+					<li>The schedule ID is a 5-digit hexadecimal number displayed on top of the schedule.</li>
+					<li>It is designed to be unique in the context of a search query.</li>
+					<li>You can use it to uniquely identify a schedule you like. It won't change even if the sorting order changes.</li>
+				</ul>
+				<em>Enlistment Probability</em>
+				<ul>
+					<li>CRS-o-matic knows some basic probability theory. Based on the demand and available slots, it can calculate your chances of preenlisting a class.</li>
+					<li>Classes with identical schedules are lumped together. Probabilities are computed by adding total demand and available slots.</li>
+					<li>You would want a schedule with a high probability mean and a low standard deviation.</li>
+					<li>Schedules are sorted based on the probabilities of individual classes, not the mean probabilities of the schedule. (<em>see next point</em>)</li>
+					<li>The order of classes in the search query matters. The first class determines the first-level sorting of the schedules (and so on).</li>
+				</ul>
+				<em>Parent-Child Matching</em>
+				<ul>
+					<li>The parent-child relationship of classes is inferred from their sections.</li>
+					<li>Course numbers with obscure naming formats might be unsupported.</li>
+				</ul>
+
+				<strong>Disclaimer:</strong>
+				<p>All data presented by CRS-o-matic ('The Software') are just parsed from the <a href="http://crs.upd.edu.ph/schedule">CRS website</a> and are not modified in any way. Thus, I will not be responsible for any misleading or erroneous information produced by the software due to inconsistencies or errors in the CRS website. I will also not be responsible for any misleading or erroneous information caused by bugs in the software. If you want to know how the software works, feel free to <a href="https://github.com/baudm/crs-o-matic">get the source</a>.</p>
+
 				<p class="icon">
 					<a href="http://validator.w3.org/check?uri=referer">
 						<img src="http://www.w3.org/Icons/valid-xhtml10-blue" alt="Valid XHTML 1.0 Strict" height="31" width="88"/>
