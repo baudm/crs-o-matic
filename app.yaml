@@ -1,4 +1,6 @@
 runtime: python37
+instance_class: f4_highmem
+entrypoint: gunicorn -b :$PORT -w 8 main:app
 
 handlers:
 
