@@ -1,6 +1,6 @@
 runtime: python37
 instance_class: f4_highmem
-entrypoint: gunicorn -b :$PORT -w 8 main:app
+entrypoint: gunicorn --bind :$PORT --workers 8 --timeout 120 main:app
 
 handlers:
 
@@ -8,4 +8,5 @@ handlers:
   static_dir: static
 
 - url: /.*
+  secure: always
   script: auto
