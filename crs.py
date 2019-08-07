@@ -244,7 +244,14 @@ class ClassParser:
                 # get rid of DISSOLVED classes
                 continue
             stats.append(demand.text)
-            kls.stats = tuple(map(int, stats))
+            kls.stats = []
+            for s in stats:
+                try:
+                    v = int(s)
+                except ValueError:
+                    v = 0
+                kls.stats.append(v)
+            kls.stats = tuple(kls.stats)
             if schedule.count(' disc ') == 1 and not ' lec ' in schedule:
                 children.append(kls)
             elif schedule.count(' lab ') == 1 and not ' lec ' in schedule:
