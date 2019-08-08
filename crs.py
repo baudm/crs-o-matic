@@ -93,13 +93,12 @@ class Class:
             if c.stats[0]:
                 available += c.stats[0]
                 demand += c.stats[2]
-        try:
-            prob = available / demand
-        except ZeroDivisionError:
-            prob = 1.0
-        # Normalize
-        if prob > 1.0:
-            prob = 1.0
+        if available == 0:
+            prob = 0.
+        elif demand == 0:
+            prob = 1.
+        else:
+            prob = min(available / demand, 1.)
         return prob
 
 
