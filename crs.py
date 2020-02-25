@@ -212,11 +212,10 @@ class Heatmap(Schedule):
                     start, end = interval
                     s = times.index(start)
                     e = times.index(end)
-                    attrs = {'class': 'highlight'}
                     for i in range(s, e):
                         c = table._data[i + 1][day_i]
                         if c is None:
-                            table.set_cell(day_i, i + 1, 1, attrs)
+                            table.set_cell(day_i, i + 1, 1)
                         else:
                             c._data += 1
                             max_value = max(max_value, c._data)
@@ -475,10 +474,7 @@ def search(course_num, term=None, filters=(), distinct=False):
 
 
 def get_heatmap(*classes):
-    heatmap = Heatmap()
-    for combination in classes:
-        for c in combination:
-            heatmap.append(c)
+    heatmap = Heatmap(chain.from_iterable(classes))
     return [heatmap]
 
 
