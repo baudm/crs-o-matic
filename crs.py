@@ -279,7 +279,7 @@ class ClassParser:
 
     def _postprocess(self, parents, children):
         if children:
-            results = filter(self._filter_class, children)
+            results = list(filter(self._filter_class, children))
             # Merge schedules with the respective parent
             if parents:
                 for kls in results:
@@ -305,8 +305,8 @@ class ClassParser:
                     kls.credit = kls.credit or p_kls.credit
                     self._merge_sched(kls.schedule, p_kls.schedule)
         else:
-            results = filter(self._filter_class, parents.values())
-        return list(results)
+            results = list(filter(self._filter_class, parents.values()))
+        return results
 
     @staticmethod
     def _parse_time(data):
