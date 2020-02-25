@@ -1,14 +1,14 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml">
+<!DOCTYPE html>
+<html lang="en">
 	<head>
 		<title>CRS-o-matic</title>
 		<meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
 		<link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}" />
 		<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/main.css') }}" />
 		<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/jquery.paginate.css') }}" />
-		<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
-		<script type="text/javascript" src="{{ url_for('static', filename='js/jquery.paginate.js') }}"></script>
-		<script type="text/javascript" src="{{ url_for('static', filename='js/pagination.js') }}"></script>
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+		<script src="{{ url_for('static', filename='js/jquery.paginate.js') }}"></script>
+		<script src="{{ url_for('static', filename='js/pagination.js') }}"></script>
 	</head>
 	<body>
 
@@ -89,7 +89,7 @@
 				{% endif %}
 
 			{% else %}
-				<form id="form" method="post" action="">
+				<form id="form" method="post">
 					<fieldset>
 						Basic Filtering:<br />
 						<strong>PE 2 TN</strong> - <em>all PE 2 lawn tennis classes</em><br />
@@ -142,10 +142,10 @@
 				<p>All data presented by CRS-o-matic ('The Software') are just parsed from the <a href="http://crs.upd.edu.ph/schedule">CRS website</a> and are not modified in any way. Thus, I will not be responsible for any misleading or erroneous information produced by the software due to inconsistencies or errors in the CRS website. I will also not be responsible for any misleading or erroneous information caused by bugs in the software. If you want to know how the software works, feel free to <a href="https://github.com/baudm/crs-o-matic">get the source</a>.</p>
 
 				<p class="icon">
-					<a href="http://validator.w3.org/check?uri=referer">
-						<img src="http://www.w3.org/Icons/valid-xhtml10-blue" alt="Valid XHTML 1.0 Strict" height="31" width="88"/>
+					<a href="https://validator.w3.org/nu/?doc=https%3A%2F%2Fcrs-o-matic.appspot.com">
+						<img src="https://www.w3.org/html/logo/badge/html5-badge-h-solo.png" width="31" height="31" alt="HTML5 Powered" title="HTML5 Powered"/>
 					</a>
-					<a href="http://jigsaw.w3.org/css-validator/check/referer">
+					<a href="https://jigsaw.w3.org/css-validator/validator?uri=https%3A%2F%2Fcrs-o-matic.appspot.com">
 						<img style="border:0;width:88px;height:31px" src="http://jigsaw.w3.org/css-validator/images/vcss-blue" alt="Valid CSS!"/>
 					</a>
 				</p>
