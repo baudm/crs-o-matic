@@ -32,7 +32,7 @@ app = Flask(__name__)
 app.register_blueprint(filters)
 
 
-def _search(queries):
+def _search(queries, heatmap_mode):
     desired = {
         'reg': [],
         'extra': [],
@@ -51,7 +51,7 @@ def _search(queries):
             course_num = s[0]
             filters = []
         course_num = ' '.join(course_num.split())
-        c = crs.search(course_num, TERM, filters, True)
+        c = crs.search(course_num, TERM, filters, not heatmap_mode)
         if c:
             classes.append(c)
             if not c[0].name.startswith('CWTS') and not c[0].name.startswith('PE '):
@@ -76,9 +76,13 @@ def get():
 @app.route('/', methods=['POST'])
 def post():
     searchkey = request.form['searchkey']
+    heatmap_mode = 'heatmap_mode' in request.form
     terms = [s for s in searchkey.split('\r\n') if s]
-    desired, classes = _search(terms)
-    scheds = crs.get_schedules(*classes) if classes else None
+    desired, classes = _search(terms, heatmap_mode)
+    if heatmap_mode:
+        scheds = crs.get_heatmap(*classes) if classes else None
+    else:
+        scheds = crs.get_schedules(*classes) if classes else None
     return render_template('index.html', sem=SEM, desired=desired, scheds=scheds)
 
 

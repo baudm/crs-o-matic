@@ -27,7 +27,7 @@ class Cell:
     def html_list(self):
         code = ['<', self._tag]
         code.extend([' {}="{}"'.format(k, v) for k, v in self._attrs.items()])
-        code.extend(['>', self._data, '</', self._tag, '>'])
+        code.extend(['>', str(self._data), '</', self._tag, '>'])
         return code
 
 

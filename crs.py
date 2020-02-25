@@ -16,6 +16,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import colorsys
 import hashlib
 import math
 import time
@@ -173,6 +174,65 @@ class Schedule(list):
         # hash based on sorted representations of the individual classes
         r = ''.join(sorted([str(c) for c in self]))
         return hashlib.sha1(r.encode('utf-8')).hexdigest()[:5]
+
+
+class Heatmap(Schedule):
+
+    def append(self, class_):
+        list.append(self, class_)
+
+    @staticmethod
+    def _get_hex_color(value):
+        """Get heatmap color of value [0, 1] in hex"""
+        h = 0.58
+        s = value
+        l = 0.3 + 0.7*(1. - value)
+        r, g, b = colorsys.hls_to_rgb(h, l, s)
+        r = int(255 * r)
+        g = int(255 * g)
+        b = int(255 * b)
+        return '#{r:02x}{g:02x}{b:02x}'.format(r=r, g=g, b=b)
+
+    def get_table(self):
+        # Obtain a flat list of all interval bounds
+        times = chain.from_iterable(chain.from_iterable(chain.from_iterable([c.schedule.values() for c in self])))
+        times = sorted(set(times))
+        table = Table(7, len(times), {'class': 'schedule', 'cellpadding': 0, 'cellspacing': 0})
+        table.set_header_row(('Time', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'))
+        table.set_cell_attrs(0, 0, {'class': 'time'})
+        for idx in range(len(times) - 1):
+            table.set_cell(0, idx + 1, '{}-{}'.format(times[idx], times[idx + 1]))
+        day_map = {'M': 1, 'T': 2, 'W': 3, 'Th': 4, 'F': 5, 'S': 6}
+
+        max_value = 1
+        for class_ in self:
+            for day in class_.schedule:
+                day_i = day_map[day]
+                for interval in class_.schedule[day]:
+                    start, end = interval
+                    s = times.index(start)
+                    e = times.index(end)
+                    attrs = {'class': 'highlight'}
+
+                    # table.set_cell(day_i, s + 1, class_.name, attrs)
+                    for i in range(s, e):
+                        c = table._data[i + 1][day_i]
+                        if c is None:
+                            table.set_cell(day_i, i + 1, 1, attrs)
+                        else:
+                            c._data += 1
+                            max_value = max(max_value, c._data)
+
+        for row in range(1, len(table._data)):
+            for col in range(1, len(table._data[row])):
+                cell = table._data[row][col]
+                if cell is not None:
+                    v = cell._data / max_value
+                    fg_color = '#fff' if v > 0.4 else '#000'
+                    bg_color = self._get_hex_color(v)
+                    cell._attrs = {'style': 'color: ' + fg_color +'; background-color: ' + bg_color}
+
+        return table.html
 
 
 class ClassParser:
@@ -414,6 +474,14 @@ def search(course_num, term=None, filters=(), distinct=False):
     # Sort by the odds of getting a class
     classes.sort(key=Class.get_odds, reverse=True)
     return classes
+
+
+def get_heatmap(*classes):
+    heatmap = Heatmap()
+    for combination in classes:
+        for c in combination:
+            heatmap.append(c)
+    return [heatmap]
 
 
 def get_schedules(*classes):
