@@ -47,7 +47,12 @@
 
 					Total number of units: <strong>{{ desired.units }}</strong>
 					<br /><br />
+					{% if heatmap_mode %}
+					<strong style="color: #fff; background-image: linear-gradient(to right, {{ gradient_start }}, {{ gradient_end }})">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Heatmap Mode</strong> activated.
+					The numbers indicate how many classes fall on the individual time slots:
+					{% else %}
 					There {{ scheds|pluralize('is', 'are') }} {{ scheds|length }} schedule{{ scheds|pluralize }} without conflicts out of {{ desired.possible }} possible schedule{{ desired.possible|pluralize }}:
+					{% endif %}
 					<br /><br />
 
 					<div class="pagination"></div>
@@ -58,7 +63,9 @@
 							 <div id="p{{ loop.index|page_id }}" class="page" style="display: none">
 						{% endif %}
 
+						{% if not heatmap_mode %}
 					<h2>{{ loop.index }}. ID# {{ sched.id }}</h2>
+						{% endif %}
 					<table class="parent-table">
 						<tr>
 							<td class="first">
@@ -100,7 +107,7 @@
 						Term: <strong>{{ sem }}</strong><br />
 						<label for="searchkey">Desired subjects (order by preference; case-insensitive; newline-separated):</label><br />
 						<textarea id="searchkey" name="searchkey" rows="10" cols="20"></textarea><br />
-						<input id="heatmap_mode" name="heatmap_mode" type="checkbox"/><label for="heatmap_mode">Heatmap mode</label><br/>
+						<input id="heatmap_mode" name="heatmap_mode" type="checkbox"/><label for="heatmap_mode">Heatmap Mode (BETA)</label><br/>
 						<input type="submit" value="Search"/>
 					</fieldset>
 				</form>

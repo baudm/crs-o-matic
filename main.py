@@ -79,11 +79,14 @@ def post():
     heatmap_mode = 'heatmap_mode' in request.form
     terms = [s for s in searchkey.split('\r\n') if s]
     desired, classes = _search(terms, heatmap_mode)
+    kwargs = {}
     if heatmap_mode:
         scheds = crs.get_heatmap(*classes) if classes else None
+        kwargs['gradient_start'] = crs.Heatmap.get_hex_color(0)
+        kwargs['gradient_end'] = crs.Heatmap.get_hex_color(1)
     else:
         scheds = crs.get_schedules(*classes) if classes else None
-    return render_template('index.html', sem=SEM, desired=desired, scheds=scheds)
+    return render_template('index.html', sem=SEM, desired=desired, scheds=scheds, heatmap_mode=heatmap_mode, **kwargs)
 
 
 if __name__ == '__main__':

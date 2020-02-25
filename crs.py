@@ -182,12 +182,12 @@ class Heatmap(Schedule):
         list.append(self, class_)
 
     @staticmethod
-    def _get_hex_color(value):
+    def get_hex_color(value):
         """Get heatmap color of value [0, 1] in hex"""
-        h = 0.58
-        s = value
-        l = 0.3 + 0.7*(1. - value)
-        r, g, b = colorsys.hls_to_rgb(h, l, s)
+        h = 0.5960
+        s = 0.0353 + 0.89 * value
+        v = 0.4196 + 0.5804 * (1. - value)
+        r, g, b = colorsys.hsv_to_rgb(h, s, v)
         r = int(255 * r)
         g = int(255 * g)
         b = int(255 * b)
@@ -213,8 +213,6 @@ class Heatmap(Schedule):
                     s = times.index(start)
                     e = times.index(end)
                     attrs = {'class': 'highlight'}
-
-                    # table.set_cell(day_i, s + 1, class_.name, attrs)
                     for i in range(s, e):
                         c = table._data[i + 1][day_i]
                         if c is None:
@@ -228,9 +226,9 @@ class Heatmap(Schedule):
                 cell = table._data[row][col]
                 if cell is not None:
                     v = cell._data / max_value
-                    fg_color = '#fff' if v > 0.4 else '#000'
-                    bg_color = self._get_hex_color(v)
-                    cell._attrs = {'style': 'color: ' + fg_color +'; background-color: ' + bg_color}
+                    fg_color = '#fff' if v > 0.5 else '#000'
+                    bg_color = self.get_hex_color(v)
+                    cell._attrs = {'style': 'font-weight: bold; color: ' + fg_color + '; background-color: ' + bg_color}
 
         return table.html
 
