@@ -225,7 +225,7 @@ class Heatmap(Schedule):
                 if cell is not None:
                     v = cell._data / max_value
                     bg_color = self.get_color(v)
-                    fg_color = '#fff' if color.rgb_relative_luminance(bg_color) < 0.5 else '#000'
+                    fg_color = '#fff' if color.rgb_relative_luminance(bg_color) < 0.1791 else '#000'
                     bg_color = color.rgb_to_hex(bg_color)
                     cell._attrs = {'style': 'font-weight: bold; color: ' + fg_color + '; background-color: ' + bg_color}
 
