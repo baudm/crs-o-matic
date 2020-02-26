@@ -23,6 +23,8 @@ import time
 import requests
 
 from bs4 import BeautifulSoup, SoupStrainer
+
+import color
 from htmltable import Table
 
 import itertools
@@ -182,16 +184,13 @@ class Heatmap(Schedule):
         list.append(self, class_)
 
     @staticmethod
-    def get_hex_color(value):
-        """Get heatmap color of value [0, 1] in hex"""
+    def get_color(value):
+        """Get heatmap color of value [0, 1] in 8-bit RGB values"""
         h = 0.5960
         s = 0.0353 + 0.89 * value
         v = 0.4196 + 0.5804 * (1. - value)
-        r, g, b = colorsys.hsv_to_rgb(h, s, v)
-        r = int(255 * r)
-        g = int(255 * g)
-        b = int(255 * b)
-        return '#{r:02x}{g:02x}{b:02x}'.format(r=r, g=g, b=b)
+        rgb = colorsys.hsv_to_rgb(h, s, v)
+        return color.rgb_to_8bit(rgb)
 
     def get_table(self):
         # Obtain a flat list of all interval bounds
@@ -225,8 +224,9 @@ class Heatmap(Schedule):
                 cell = table._data[row][col]
                 if cell is not None:
                     v = cell._data / max_value
-                    fg_color = '#fff' if v > 0.5 else '#000'
-                    bg_color = self.get_hex_color(v)
+                    bg_color = self.get_color(v)
+                    fg_color = '#fff' if color.rgb_relative_luminance(bg_color) < 0.5 else '#000'
+                    bg_color = color.rgb_to_hex(bg_color)
                     cell._attrs = {'style': 'font-weight: bold; color: ' + fg_color + '; background-color: ' + bg_color}
 
         return table.html

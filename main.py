@@ -21,6 +21,7 @@ from functools import reduce
 
 from flask import Flask, render_template, request
 
+import color
 import crs
 from filters import filters
 
@@ -82,8 +83,8 @@ def post():
     kwargs = {}
     if heatmap_mode:
         scheds = crs.get_heatmap(*classes) if classes else None
-        kwargs['gradient_start'] = crs.Heatmap.get_hex_color(0)
-        kwargs['gradient_end'] = crs.Heatmap.get_hex_color(1)
+        kwargs['gradient_start'] = color.rgb_to_hex(crs.Heatmap.get_color(0))
+        kwargs['gradient_end'] = color.rgb_to_hex(crs.Heatmap.get_color(1))
     else:
         scheds = crs.get_schedules(*classes) if classes else None
     return render_template('index.html', sem=SEM, desired=desired, scheds=scheds, heatmap_mode=heatmap_mode, **kwargs)
