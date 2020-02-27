@@ -63,6 +63,17 @@ class Time(tuple):
 
 class Interval(tuple):
 
+    def encode(self):
+        """Encodes the interval into its binary representation
+        Each bit corresponds to a 15-minute interval
+        """
+        # Earliest start hour is 7am
+        ref_hour = 7
+        start, end = self
+        start = 1 << ((start[0] - ref_hour) * 4 + start[1] // 15)
+        end = 1 << ((end[0] - ref_hour) * 4 + end[1] // 15 - 1)
+        return (start - 1) ^ (end - 1) | end
+
     def __new__(cls, start, end):
         return super().__new__(cls, (start, end))
 
@@ -78,6 +89,7 @@ class Class:
         self.section = section
         self.credit = None
         self.schedule = None
+        self._schedule_enc = None
         self.stats = None
         self.similar = []
 
@@ -111,18 +123,18 @@ class ScheduleConflict(Exception):
 
 class Schedule(list):
 
-    def append(self, class_):
-        for c in self:
-            for day in c.schedule:
-                if day not in class_.schedule:
-                    continue
-                for dur in c.schedule[day]:
-                    for dur_new in class_.schedule[day]:
-                        if (dur_new[0] <= dur[0] and dur_new[1] >= dur[1]) or \
-                           (dur_new[0] >= dur[0] and dur_new[1] <= dur[1]) or \
-                           dur[0] < dur_new[0] < dur[1] or dur[0] < dur_new[1] < dur[1]:
-                            raise ScheduleConflict('{} conflicts with {}'.format(class_, c))
-        super().append(class_)
+    def __init__(self, classes) -> None:
+        self._check_conflicts(classes)
+        super().__init__(classes)
+
+    @staticmethod
+    def _check_conflicts(classes):
+        sched = [0] * 6
+        for c in classes:
+            for i, day in enumerate(c._schedule_enc):
+                if (sched[i] ^ day) & day != day:
+                    raise ScheduleConflict('Schedule conflict(s) detected.')
+                sched[i] |= day
 
     def get_table(self):
         # Obtain a flat list of all interval bounds
@@ -292,7 +304,7 @@ class ClassParser:
             kls.credit = float(credit.text)
             # schedule
             schedule = schedule.text
-            kls.schedule = self._parse_sched(schedule)
+            kls.schedule, kls._schedule_enc = self._parse_sched(schedule)
             # stats
             try:
                 stats = slots.text.split('/')
@@ -415,13 +427,14 @@ class ClassParser:
         # Replace 'Th' by 'th' to avoid confusion with 'T'.
         data = data.replace('Th', 'th')
         all_days = ['M', 'T', 'W', 'th', 'F', 'S']
-        days = (day.title() for day in all_days if day in data)
+        days = ((i, day.title()) for i, day in enumerate(all_days) if day in data)
         return days
 
     @staticmethod
     def _parse_sched(data):
         data = data.split()
         sched = {}
+        sched_enc = [0] * 6
         for i, block in enumerate(data[1:]):
             if '-' not in block:
                 continue
@@ -430,10 +443,12 @@ class ClassParser:
                 time = ClassParser._parse_time(block)
             except ValueError:
                 continue
+            time_enc = time.encode()
             # Assume that the previous block is valid days
-            for day in ClassParser._parse_days(data[i]):
+            for d, day in ClassParser._parse_days(data[i]):
+                sched_enc[d] |= time_enc
                 sched.setdefault(day, []).append(time)
-        return sched
+        return sched, sched_enc
 
     @staticmethod
     def _merge_sched(dest, source):
@@ -481,10 +496,8 @@ def get_heatmap(*classes):
 def get_schedules(*classes):
     schedules = []
     for combination in itertools.product(*classes):
-        sched = Schedule()
         try:
-            for c in combination:
-                sched.append(c)
+            sched = Schedule(combination)
         except ScheduleConflict:
             continue
         else:
@@ -495,10 +508,8 @@ def get_schedules(*classes):
 def get_schedules2(*classes):
     """Generator version of get_schedules()"""
     for combination in itertools.product(*classes):
-        sched = Schedule()
         try:
-            for c in combination:
-                sched.append(c)
+            sched = Schedule(combination)
         except ScheduleConflict:
             continue
         else:
