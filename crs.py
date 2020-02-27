@@ -121,11 +121,11 @@ class ScheduleConflict(Exception):
     pass
 
 
-class Schedule(list):
+class Schedule(tuple):
 
-    def __init__(self, classes) -> None:
-        self._check_conflicts(classes)
-        super().__init__(classes)
+    def __new__(cls, classes):
+        cls._check_conflicts(classes)
+        return super().__new__(cls, classes)
 
     @staticmethod
     def _check_conflicts(classes):
@@ -192,8 +192,9 @@ class Schedule(list):
 
 class Heatmap(Schedule):
 
-    def append(self, class_):
-        list.append(self, class_)
+    def __new__(cls, classes):
+        # No need to check for conflicts
+        return tuple.__new__(cls, classes)
 
     @staticmethod
     def get_color(value):
