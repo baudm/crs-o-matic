@@ -49,11 +49,17 @@
 					<br /><br />
 					{% if heatmap_mode %}
 					<strong style="color: #fff; background-image: linear-gradient(to right, {{ gradient_start }}, {{ gradient_end }})">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Heatmap Mode</strong> activated.
-					The numbers indicate how many classes fall on the individual time slots:
+					There are <strong>{{ scheds[0].num_schedules }}</strong> valid schedule{{ scheds[0].num_schedules|pluralize }}.<br/><br/>
+					<ul>
+						<li>The heatmap shows the distribution of the schedules among the individual time slots.</li>
+						<li>The percentage values can also be interpreted as the <em>cost</em> or impact of scheduling a new class at a particular time slot.</li>
+						<li>For instance, if a time slot indicates 20%, a new class scheduled at the same time slot will conflict with 20% of the valid schedules.</li>
+						<li>In this mode, the number of valid schedules might be higher because classes with the same schedule are treated separately.</li>
+					</ul>
 					{% else %}
 					There {{ scheds|pluralize('is', 'are') }} {{ scheds|length }} schedule{{ scheds|pluralize }} without conflicts out of {{ desired.possible }} possible schedule{{ desired.possible|pluralize }}:
+					<br/><br/>
 					{% endif %}
-					<br /><br />
 
 					<div class="pagination"></div>
 
@@ -72,7 +78,11 @@
 							{{ sched.get_table()|safe }}
 							</td>
 							<td>
+						{% if not heatmap_mode %}
 							{{ sched.get_stats()|safe }}
+						{% else %}
+							&nbsp;
+						{% endif %}
 							</td>
 						</tr>
 					</table>

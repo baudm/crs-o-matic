@@ -201,9 +201,11 @@ class Schedule(tuple):
 
 class Heatmap(Schedule):
 
-    def __new__(cls, classes):
+    def __new__(cls, valid_schedules):
         # No need to check for conflicts
-        return tuple.__new__(cls, classes)
+        self = tuple.__new__(cls, chain.from_iterable(valid_schedules))
+        self.num_schedules = len(valid_schedules)
+        return self
 
     @staticmethod
     def get_color(value):
@@ -250,6 +252,9 @@ class Heatmap(Schedule):
                     fg_color = '#fff' if color.rgb_relative_luminance(bg_color) < 0.1791 else '#000'
                     bg_color = color.rgb_to_hex(bg_color)
                     cell._attrs = {'style': 'font-weight: bold; color: ' + fg_color + '; background-color: ' + bg_color}
+                    # Convert to the percentage of total valid schedules
+                    percentage = 100 * cell._data / self.num_schedules
+                    cell._data = '{:.1f}%'.format(percentage)
 
         return table.html
 
@@ -498,11 +503,6 @@ def search(course_num, term=None, filters=(), distinct=False):
     return classes
 
 
-def get_heatmap(*classes):
-    heatmap = Heatmap(chain.from_iterable(classes))
-    return [heatmap]
-
-
 def get_schedules(*classes):
     schedules = []
     for combination in itertools.product(*classes):
@@ -524,3 +524,8 @@ def get_schedules2(*classes):
             continue
         else:
             yield sched
+
+
+def get_heatmap(*classes):
+    heatmap = Heatmap(get_schedules(*classes))
+    return [heatmap]
