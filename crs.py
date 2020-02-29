@@ -79,8 +79,8 @@ class Interval(tuple):
         """Encodes the interval into its binary representation"""
         start, end = self
         start = 1 << ((start[0] - self.REF_HOUR) * self.BITS_PER_HOUR + start[1] // self.MINUTES_PER_BIT)
-        end = 1 << ((end[0] - self.REF_HOUR) * self.BITS_PER_HOUR + end[1] // self.MINUTES_PER_BIT - 1)
-        return (start - 1) ^ (end - 1) | end
+        end = 1 << ((end[0] - self.REF_HOUR) * self.BITS_PER_HOUR + end[1] // self.MINUTES_PER_BIT)
+        return (start - 1) ^ (end - 1)
 
     def __new__(cls, start, end):
         return super().__new__(cls, (start, end))
