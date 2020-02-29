@@ -62,16 +62,24 @@ class Time(tuple):
 
 
 class Interval(tuple):
+    # Each bit corresponds to a 15-minute interval
+    MINUTES_PER_BIT = 15
+
+    # Number of bits needed to represent a 1-hour interval
+    BITS_PER_HOUR = 60 // MINUTES_PER_BIT
+
+    # Earliest start hour is 7am
+    REF_HOUR = 7
+
+    # Max number of bits needed to represent an Interval
+    # Assume that 9pm is the latest end hour
+    MAX_BIT_LENGTH = (21 - REF_HOUR) * BITS_PER_HOUR
 
     def encode(self):
-        """Encodes the interval into its binary representation
-        Each bit corresponds to a 15-minute interval
-        """
-        # Earliest start hour is 7am
-        ref_hour = 7
+        """Encodes the interval into its binary representation"""
         start, end = self
-        start = 1 << ((start[0] - ref_hour) * 4 + start[1] // 15)
-        end = 1 << ((end[0] - ref_hour) * 4 + end[1] // 15 - 1)
+        start = 1 << ((start[0] - self.REF_HOUR) * self.BITS_PER_HOUR + start[1] // self.MINUTES_PER_BIT)
+        end = 1 << ((end[0] - self.REF_HOUR) * self.BITS_PER_HOUR + end[1] // self.MINUTES_PER_BIT - 1)
         return (start - 1) ^ (end - 1) | end
 
     def __new__(cls, start, end):
@@ -129,12 +137,13 @@ class Schedule(tuple):
 
     @staticmethod
     def _check_conflicts(classes):
-        sched = [0] * 6
+        sched = 0
         for c in classes:
-            for i, day in enumerate(c._schedule_enc):
-                if (sched[i] ^ day) & day != day:
-                    raise ScheduleConflict('Schedule conflict(s) detected.')
-                sched[i] |= day
+            day = c._schedule_enc
+            new_sched = sched | day
+            if sched ^ day != new_sched:
+                raise ScheduleConflict('Schedule conflict(s) detected.')
+            sched = new_sched
 
     def get_table(self):
         # Obtain a flat list of all interval bounds
@@ -435,7 +444,7 @@ class ClassParser:
     def _parse_sched(data):
         data = data.split()
         sched = {}
-        sched_enc = [0] * 6
+        sched_enc = 0
         for i, block in enumerate(data[1:]):
             if '-' not in block:
                 continue
@@ -447,7 +456,7 @@ class ClassParser:
             time_enc = time.encode()
             # Assume that the previous block is valid days
             for d, day in ClassParser._parse_days(data[i]):
-                sched_enc[d] |= time_enc
+                sched_enc |= time_enc << d * Interval.MAX_BIT_LENGTH
                 sched.setdefault(day, []).append(time)
         return sched, sched_enc
 
