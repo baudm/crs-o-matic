@@ -304,7 +304,9 @@ class ClassParser:
                 continue
             kls = Class(code=code.text.strip())
             # name, section
-            kls.name, kls.section = self._tokenize_name(name.text)
+            # Sometimes this table cell contains <br/> tags so we use the stripped_strings generator instead
+            # in order to get the first string content of the cell.
+            kls.name, kls.section = self._tokenize_name(next(name.stripped_strings))
 
             # Get class name for filtering
             class_name = kls.name.lower()
@@ -317,8 +319,8 @@ class ClassParser:
                 continue
             # credit
             kls.credit = float(credit.text)
-            # schedule
-            schedule = schedule.text
+            # Only the first line contains the actual schedule
+            schedule = next(schedule.stripped_strings)
             kls.schedule, kls._schedule_enc = self._parse_sched(schedule)
             # stats
             try:
