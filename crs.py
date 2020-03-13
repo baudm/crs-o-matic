@@ -199,11 +199,10 @@ class Schedule(tuple):
         return hashlib.sha1(r.encode('utf-8')).hexdigest()[:5]
 
 
-class Heatmap(Schedule):
+class Heatmap(tuple):
 
     def __new__(cls, valid_schedules):
-        # No need to check for conflicts
-        self = tuple.__new__(cls, chain.from_iterable(valid_schedules))
+        self = super().__new__(cls, chain.from_iterable(valid_schedules))
         self.num_schedules = len(valid_schedules)
         return self
 
