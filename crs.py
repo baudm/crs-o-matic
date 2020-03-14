@@ -125,6 +125,26 @@ class Class:
         return prob
 
 
+class Course:
+
+    def __init__(self) -> None:
+        self.code = None
+        self.name = None
+        self.title = None
+        self.section = None
+        self.credits = None
+        self.schedule = None
+        self.instructors = None
+        self.remarks = None
+        self.enlisting_unit = None
+        self.block = None
+        self.block_remarks = None
+        self.available_slots = None
+        self.total_slots = None
+        self.demand = None
+        self.restrictions = None
+
+
 class ScheduleConflict(Exception):
     pass
 
@@ -292,6 +312,7 @@ class ClassParser:
         return name, section
 
     def feed(self, data):
+        courses = []
         parents = {}
         children = []
         tbody = SoupStrainer('tbody')
@@ -301,12 +322,19 @@ class ClassParser:
                 code, name, credit, schedule, remarks, slots, demand, restrictions = tr.find_all('td')
             except ValueError:
                 continue
-            kls = Class(code=code.text.strip())
+            kls = Class(code=code.get_text(strip=True))
+            course = Course()
+            course.code = kls.code
+            course.restrictions = restrictions.get_text(strip=True)
             # name, section
             # Sometimes this table cell contains <br/> tags so we use the stripped_strings generator instead
             # in order to get the first string content of the cell.
-            kls.name, kls.section = self._tokenize_name(next(name.stripped_strings))
-
+            name = tuple(name.stripped_strings)
+            kls.name, kls.section = self._tokenize_name(name[0])
+            if len(name) > 1:
+                course.title = name[1]
+            course.name = kls.name
+            course.section = kls.section
             # Get class name for filtering
             class_name = kls.name.lower()
             if 'cwts' in self.course_num:
@@ -318,9 +346,27 @@ class ClassParser:
                 continue
             # credit
             kls.credit = float(credit.text)
+            course.credits = kls.credit
             # Only the first line contains the actual schedule
-            schedule = next(schedule.stripped_strings)
-            kls.schedule, kls._schedule_enc = self._parse_sched(schedule)
+            s = tuple(schedule.stripped_strings)
+            schedule = s[0]
+            kls.schedule, kls._schedule_enc, course.schedule = self._parse_sched(schedule)
+            course.instructors = list(map(str.title, map(str.strip, s[1].split(';'))))
+            if len(s) > 2:
+                course.remarks = s[2]
+            remarks = tuple(remarks.stripped_strings)
+            x = tuple(map(str.strip, remarks[0].split(':', maxsplit=1)))
+            course.enlisting_unit = x[0]
+            if len(x) == 2:
+                course.block = x[1]
+            if len(remarks) > 1:
+                course.block_remarks = remarks[1]
+            # remarks = remarks.stripped_strings
+            # x = tuple(map(str.strip, next(remarks).split(':', maxsplit=1)))
+            # course.enlisting_unit = x[0]
+            # if len(x) == 2:
+            #     course.block = x[1]
+            # course.block_remarks = next(remarks)
             # stats
             try:
                 stats = slots.text.split('/')
@@ -336,6 +382,7 @@ class ClassParser:
                     v = 0
                 kls.stats.append(v)
             kls.stats = tuple(kls.stats)
+            course.available_slots, course.total_slots, course.demand = kls.stats
             if schedule.count(' disc ') == 1 and not ' lec ' in schedule:
                 children.append(kls)
             elif schedule.count(' lab ') == 1 and not ' lec ' in schedule:
@@ -355,7 +402,8 @@ class ClassParser:
                     parents[kls.section] = kls
             else:
                 parents[kls.section] = kls
-        return self._postprocess(parents, children)
+            courses.append(course)
+        return self._postprocess(parents, children), courses
 
     def _filter_class(self, kls):
         """Filter based on section preferences"""
@@ -448,23 +496,37 @@ class ClassParser:
 
     @staticmethod
     def _parse_sched(data):
-        data = data.split()
+        data = data.split(';')
         sched = {}
         sched_enc = 0
-        for i, block in enumerate(data[1:]):
-            if '-' not in block:
-                continue
-            # Assume that this is a valid time
+        ctypes = {}
+        #{'type': 'lec', 'days': [1, 3], 'time': '07:00/8:30', 'venue': 'AS 101'}
+        json_sched = []
+        for chunk in data:
+            # print(chunk)
             try:
-                time = ClassParser._parse_time(block)
+                days, time, class_type, venue = chunk.split(maxsplit=3)
+            except ValueError:
+                continue
+            try:
+                time = ClassParser._parse_time(time)
             except ValueError:
                 continue
             time_enc = time.encode()
-            # Assume that the previous block is valid days
-            for d, day in ClassParser._parse_days(data[i]):
+            days_list = []
+            for d, day in ClassParser._parse_days(days):
                 sched_enc |= time_enc << d * Interval.MAX_BIT_LENGTH
                 sched.setdefault(day, []).append(time)
-        return sched, sched_enc
+                # ISO 8601: [D] is the weekday number, from 1 through 7, beginning with Monday and ending with Sunday.
+                days_list.append(d + 1)
+            json_sched.append({
+                'type': class_type,
+                'days': days_list,
+                'time': '{:02}:{:02}--{:02}:{:02}'.format(*time[0], *time[1]),
+                'venue': venue
+            })
+        # print(json_sched)
+        return sched, sched_enc, json_sched
 
     @staticmethod
     def _merge_sched(dest, source):
@@ -496,7 +558,7 @@ def search(course_num, term=None, filters=(), distinct=False):
     url = '{}/schedule/{}/{}'.format(URI, term, search_key)
     result = requests.get(url, headers=HTTP_HEADERS)
     parser = ClassParser(course_num, filters)
-    classes = parser.feed(result.text)
+    classes, _ = parser.feed(result.text)
     if distinct:
         _merge_similar(classes)
     # Sort by the odds of getting a class

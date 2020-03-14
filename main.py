@@ -19,7 +19,8 @@
 import operator
 from functools import reduce
 
-from flask import Flask, render_template, request
+import requests
+from flask import Flask, render_template, request, jsonify
 
 import color
 import crs
@@ -71,7 +72,29 @@ def _search(queries, heatmap_mode):
 
 @app.route('/')
 def get():
-    return render_template('index.html', sem=SEM)
+    return 'Usage: {}&lt;term&gt;/&lt;course_name&gt; (same format as https://crs.upd.edu.ph/schedule/&lt;term&gt;/&lt;course_name&gt;)'.format(request.url_root)
+
+
+import json
+
+class CustomEncoder(app.json_encoder):
+
+    def default(self, o):
+        if isinstance(o, crs.Course):
+            return o.__dict__
+        return super().default(o)
+
+app.json_encoder = CustomEncoder
+
+@app.route('/<term>/<course_name>')
+def search(term, course_name):
+    # print(request.args)
+    url = '{}/schedule/{}/{}'.format(crs.URI, term, course_name)
+    result = requests.get(url, headers=crs.HTTP_HEADERS)
+    parser = crs.ClassParser(course_name)
+    _, courses = parser.feed(result.text)
+    app.config['JSONIFY_PRETTYPRINT_REGULAR'] = 'minify' in request.args
+    return jsonify(courses)#json.dumps(courses, indent=4, cls=CustomEncoder)
 
 
 @app.route('/', methods=['POST'])
